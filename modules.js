@@ -809,6 +809,7 @@ Modals: {
             ScarStore.state.phoneInputInstances[input.id] = iti;
         }
     },
+    
     showConfirmation(title, message, onConfirm) {
         const template = document.getElementById('confirmation-modal-template');
         const clone = template.content.cloneNode(true);
@@ -827,6 +828,25 @@ Modals: {
         });
         newModal.querySelector('[data-action="cancel"]').addEventListener('click', () => this.closeLast());
     },
+    showAlert(title, message) {
+    const template = document.getElementById('alert-modal-template');
+    if (!template) {
+        console.error('Alert modal template not found!');
+        return;
+    }
+
+    const clone = template.content.cloneNode(true);
+    clone.getElementById('alert-title').textContent = title;
+    clone.getElementById('alert-message').textContent = message;
+
+    const tempDiv = document.createElement('div');
+    tempDiv.appendChild(clone);
+    this.show(tempDiv.innerHTML);
+    lucide.createIcons();
+    
+    // بما أن الزر يحمل كلاس 'close-modal-btn'، سيتم التعامل معه تلقائياً
+    // بفضل التعديل الذي أجريناه مسبقاً في events.js
+},
     showLightbox(media) {
         const lightboxHtml = `
             <div id="lightbox-overlay">

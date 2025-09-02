@@ -207,23 +207,34 @@ Object.assign(ScarStore, {
         handleBodyClick(e) {
             
             const target = e.target;
-            const handlePriceModeToggle = () => {
-                if (ScarStore.state.cart.length > 0) {
-                    ScarStore.Modals.showConfirmation('تغيير وضع الأسعار', 'سيتم إفراغ سلة التسوق الخاصة بك عند التبديل. هل أنت متأكد؟',
-                        () => {
-                            ScarStore.Cart.clear();
-                            ScarStore.state.priceMode = ScarStore.state.priceMode === 'retail' ? 'wholesale' : 'retail';
-                            ScarStore.UI.updatePriceModeToggle();
-                            ScarStore.resetAndReloadApp();
-                        }
-                    );
-                } else {
-                    ScarStore.state.priceMode = ScarStore.state.priceMode === 'retail' ? 'wholesale' : 'retail';
-                    ScarStore.UI.updatePriceModeToggle();
-                    ScarStore.resetAndReloadApp();
-                }
-            };
             
+        const handlePriceModeToggle = () => {
+    // التحقق إذا كان الوضع الحالي هو "قطاعي" (retail)
+    if (ScarStore.state.priceMode === 'retail') {
+        // ✅ استدعاء الدالة الجديدة بكل بساطة
+        ScarStore.Modals.showAlert(
+            'تنبيه',
+            'لا يمكن التوجه إلى وضع الجملة في الوقت الحالي، جاري تطويره. انتظرونا!'
+        );
+        return; // للخروج من الدالة ومنع التبديل
+    }
+
+    // الكود القديم للتبديل من جملة إلى قطاعي يبقى كما هو
+    if (ScarStore.state.cart.length > 0) {
+        ScarStore.Modals.showConfirmation('تغيير وضع الأسعار', 'سيتم إفراغ سلة التسوق الخاصة بك عند التبديل. هل أنت متأكد؟',
+            () => {
+                ScarStore.Cart.clear();
+                ScarStore.state.priceMode = 'wholesale';
+                ScarStore.UI.updatePriceModeToggle();
+                ScarStore.resetAndReloadApp();
+            }
+        );
+    } else {
+        ScarStore.state.priceMode = 'wholesale';
+        ScarStore.UI.updatePriceModeToggle();
+        ScarStore.resetAndReloadApp();
+    }
+};
             const delegates = {
                 '#more-filters-toggle-btn': (btn) => { bootstrap.Dropdown.getOrCreateInstance(btn).toggle(); },
                 'a[href^="?"]': (el) => { e.preventDefault(); ScarStore.Router.navigateTo(el.getAttribute('href')); },

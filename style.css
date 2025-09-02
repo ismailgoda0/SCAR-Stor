@@ -1230,4 +1230,17 @@ input[type=number] {
           
 
     }
+    .categories-scroller {
+    padding: 0 0px;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    color: var(--accent-color);
+    background-color: white;
+    width: 44px;
+    height: 44px;
+    margin: 80px 80px;
+}
+
 }

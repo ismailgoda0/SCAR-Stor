@@ -432,7 +432,18 @@
                 </div>
             </div>
         </template>
-        
+        <template id="alert-modal-template">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="mx-auto bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center">
+            <i data-lucide="info" class="w-8 h-8 text-blue-500"></i>
+        </div>
+        <h2 class="text-2xl font-bold mt-4 mb-2" id="alert-title"></h2>
+        <p class="text-slate-500 mb-6" id="alert-message"></p>
+        <div class="flex justify-center">
+            <button class="primary-btn w-full">حسناً</button>
+        </div>
+    </div>
+</template>
         <template id="wholesale-actions-template">
             <div class="wholesale-actions-container flex items-center gap-2">
                 <button class="select-models-btn primary-btn w-full flex items-center justify-center gap-2" data-action="open-model-selector">
