@@ -1,0 +1,149 @@
+{
+  "categories": [
+    { "id": "chargers", "name": "الشواحن والطاقة", "icon": "plug-zap", "prefix": "C" },
+    { "id": "cases", "name": "الجرابات والحماية", "icon": "smartphone-device", "prefix": "P" },
+    { "id": "screen-protectors", "name": "واقيات الشاشة", "icon": "shield-check", "prefix": "S" },
+    { "id": "audio", "name": "الصوتيات", "icon": "headphones", "prefix": "A" },
+    { "id": "holders", "name": "الحوامل", "icon": "grip", "prefix": "H" },
+    { "id": "cables", "name": "الكابلات", "icon": "usb", "prefix": "L" },
+    { "id": "smartwatches", "name": "الساعات الذكية", "icon": "watch", "prefix": "W" },
+    { "id": "memory", "name": "الذاكرة والتخزين", "icon": "sd-card", "prefix": "M" },
+    { "id": "game-accessories", "name": "ملحقات الألعاب", "icon": "gamepad-2", "prefix": "G" }
+  ],
+  "products": [
+
+   {
+  "id": 50,
+  "name": "سماعات أذن برو 2 نوع سي مع تحكم بشاشة تعمل باللمس من ميرف - أسود",
+  "brand": "MERV",
+  "basePrice": 500,
+  "discountPercentage": 6,
+  "stock": 50,
+  "categoryId": "audio",
+  "countryOfOrigin": "الصين",
+  "dateAdded": "2025-07-20",
+  "images": [
+    "https://m.media-amazon.com/images/I/31e17ZxwriL._AC_.jpg",
+    "https://m.media-amazon.com/images/I/21cEDwculLL._AC_.jpg",
+    "https://m.media-amazon.com/images/I/31uAEIIRE1L._AC_SX522_.jpg",
+    "https://m.media-amazon.com/images/I/312GPtLnS3L._AC_SX522_.jpg",
+    "https://m.media-amazon.com/images/I/318vI6QdArL._AC_SX522_.jpg",
+    "https://m.media-amazon.com/images/I/51gUTUZ14nL._AC_.jpg"
+
+  ],
+  "description": "خاصية التحكم باللمس: تسمح الألواح الحساسة للمس على سماعات الأذن بالتحكم السهل في تشغيل الموسيقى والمكالمات وضبط مستوى الصوت\nالاتصال نوع سي: تتميز بمنفذ شحن من النوع سي لتوافق الشحن السريع والموثوق مع الأجهزة الحديثة\nجودة الصوت: توفر المشغلات الممتازة صوتًا واضحًا ومتوازنًا مع استجابة صوت جهوري محسنة لتجربة استماع غامرة\nتصميم مريح: خفيفة الوزن ومريحة، مصممة للارتداء لفترة طويلة، مع مقاسات متعددة لأطراف الأذن متضمنة\nمزايا ذكية: ميكروفون مدمج لإجراء المكالمات بدون استخدام اليدين والوصول إلى المساعد الصوتي، مع واجهة لمس بديهية للتحكم السلس.",
+ 
+  "bestSeller": false
+},
+
+
+
+
+
+ {
+      "id": 101, "name": "شاحن Anker PowerPort III 65W", "brand": "Anker", "basePrice": 1200, "discountPercentage": 6, "stock": 25, "categoryId": "chargers", "countryOfOrigin": "الصين", "dateAdded": "2025-07-20",
+      "images": ["https://placehold.co/600x600/ffffff/000000?text=Anker+Charger%0AWhite", "https://placehold.co/600x600/000000/ffffff?text=Anker+Charger%0ABlack"],
+      "description": "شاحن سريع بقوة 65 واط بتقنية GaN II، مثالي لأجهزة اللابتوب والهواتف.",
+      "variants": { "اللون": [{"name": "أبيض", "value": "#FFFFFF", "imageSet": 1, "priceModifier": 0}, {"name": "أسود", "value": "#000000", "imageSet": 2, "priceModifier": 50}] },
+      "bestSeller": true
+    },
+    {
+      "id": 102, "name": "باور بانك Anker 737 PowerCore 24K", "brand": "Anker", "basePrice": 3500, "discountPercentage": 0, "stock": 15, "categoryId": "chargers", "countryOfOrigin": "الصين", "dateAdded": "2025-08-15",
+      "images": ["https://placehold.co/600x600/1e293b/ffffff?text=Anker+737"], "description": "باور بانك عملاق بسعة 24,000mAh وقوة شحن 140W، يشحن اللابتوب والهاتف معًا.",
+      "isNew": true, "isExclusive": true
+    },
+    {
+      "id": 201, "name": "كفر حماية Spigen Ultra Hybrid", "brand": "Spigen", "basePrice": 850, "discountPercentage": 0, "stock": 500, "categoryId": "cases", "countryOfOrigin": "كوريا الجنوبية", "dateAdded": "2025-06-15",
+      "images": ["https://placehold.co/600x600/e0e7ff/3730a3?text=Spigen+Case%0AClear"], "description": "كفر شفاف يظهر جمال تصميم هاتفك مع حماية فائقة ضد الصدمات.",
+"variants": {
+  "موديل الهاتف": [
+    { "value": "iPhone 15 Pro", "priceModifier": 0 ,"minPurchase": 10,"purchaseStep": 10},
+    { "value": "iPhone 15 Pro Max", "priceModifier": 75 ,"minPurchase": 10,"purchaseStep": 10},
+    { "value": "Samsung S24 Ultra", "priceModifier": 50 ,"minPurchase": 0,"purchaseStep": 1}
+  ],
+  "اللون": [
+    { "name": "أسود", "value": "#000000", "imageSet": 1, "priceModifier": 50 },
+    { "name": "أزرق", "value": "#3b82f6", "imageSet": 2, "priceModifier": 0 },
+    { "name": "أحمر", "value": "#f87171", "imageSet": 3, "priceModifier": 0 }
+  ]
+},
+"minPurchase": 9,"purchaseStep": 9,
+      "bestSeller": true
+    },
+    {
+      "id": 202, "name": "كفر سيليكون أصلي من Apple", "brand": "Apple", "basePrice": 1800, "discountPercentage": 10, "stock": 30, "categoryId": "cases", "countryOfOrigin": "فيتنام", "dateAdded": "2025-08-05",
+      "images": ["https://placehold.co/600x600/60a5fa/ffffff?text=Apple+Case%0ABlue"], "description": "كفر سيليكون ناعم الملمس مع بطانة مايكروفايبر لحماية فائقة.",
+      "variants": { "اللون": [{"name": "أزرق", "value": "#60a5fa", "priceModifier": 0}, {"name": "وردي", "value": "#f472b6", "priceModifier": 100}, {"name": "أسود", "value": "#1f2937", "priceModifier": 0}] }
+    },
+    {
+      "id": 301, "name": "سماعة Soundcore Life P3", "brand": "Anker", "basePrice": 2500, "discountPercentage": 10, "stock": 18, "categoryId": "audio", "countryOfOrigin": "الصين", "dateAdded": "2025-08-01",
+      "images": ["https://placehold.co/600x600/000000/ffffff?text=Soundcore+P3%0ABlack", "https://placehold.co/600x600/3b82f6/ffffff?text=Soundcore+P3%0ABlue", "https://placehold.co/600x600/f87171/ffffff?text=Soundcore+P3%0ARed"],
+      "description": "سماعة أذن لاسلكية مع خاصية إلغاء الضوضاء النشط متعدد الأوضاع وصوت BassUp.",
+      "variants": { "اللون": [{"name": "أسود", "value": "#000000", "imageSet": 1, "priceModifier": 50}, {"name": "أزرق", "value": "#3b82f6", "imageSet": 2, "priceModifier": 0}, {"name": "أحمر", "value": "#f87171", "imageSet": 3, "priceModifier": 0}] }
+    },
+    {
+      "id": 302, "name": "Apple AirPods Pro 2", "brand": "Apple", "basePrice": 8500, "discountPercentage": 0, "stock": 22, "categoryId": "audio", "countryOfOrigin": "فيتنام", "dateAdded": "2025-07-28",
+      "images": ["https://placehold.co/600x600/f5f5f5/000000?text=AirPods+Pro+2"], "description": "تجربة استماع غامرة مع إلغاء ضوضاء فعال وصوت تكيفي جديد.",
+      "isNew": true, "bestSeller": true, "isExclusive": true
+    },
+    {
+      "id": 401, "name": "واقي شاشة زجاجي ESR", "brand": "ESR", "basePrice": 450, "discountPercentage": 10, "stock": 100, "categoryId": "screen-protectors", "countryOfOrigin": "الصين", "dateAdded": "2025-05-10",
+      "images": ["https://placehold.co/600x600/f0f9ff/0c4a6e?text=ESR+Protector"], "description": "واقي شاشة فائق الوضوح ومقاوم للخدوش مع إطار تركيب سهل.",
+      "variants": { "موديل الهاتف": [{"value": "iPhone 15 Pro", "priceModifier": 0}, {"value": "iPhone 15 Pro Max", "priceModifier": 50}] }
+   
+    
+    },
+    {
+      "id": 402, "name": "واقي شاشة خصوصية ZAGG", "brand": "ZAGG", "basePrice": 700, "discountPercentage": 0, "stock": 40, "categoryId": "screen-protectors", "countryOfOrigin": "الولايات المتحدة", "dateAdded": "2025-08-11",
+      "images": ["https://placehold.co/600x600/334155/e2e8f0?text=ZAGG+Privacy"], "description": "حماية شاشتك من الخدوش وأعين المتطفلين مع واقي شاشة الخصوصية."
+    },
+    {
+      "id": 501, "name": "كابل Baseus Type-C", "brand": "Baseus", "basePrice": 300, "discountPercentage": 0, "stock": 70, "categoryId": "cables", "countryOfOrigin": "الصين", "dateAdded": "2025-06-25",
+      "images": ["https://placehold.co/600x600/1f2937/ffffff?text=Baseus+Cable"], "description": "كابل شحن ونقل بيانات سريع ومتين ومغلف بالقماش.",
+      "variants": { "الطول": [{"value": "1 متر", "priceModifier": 0}, {"value": "2 متر", "priceModifier": 80}], "اللون": [{"name": "أسود", "value": "#1f2937", "priceModifier": 0}, {"name": "أحمر", "value": "#ef4444", "priceModifier": 20}] }
+    },
+    {
+      "id": 502, "name": "كابل Anker PowerLine III USB-C to Lightning", "brand": "Anker", "basePrice": 750, "discountPercentage": 15, "stock": 35, "categoryId": "cables", "countryOfOrigin": "الصين", "dateAdded": "2025-07-22",
+      "images": ["https://placehold.co/600x600/ffffff/000000?text=Anker+PowerLine+III"], "description": "كابل معتمد من Apple MFi، مصمم ليدوم طويلاً ويدعم الشحن السريع.",
+      "isNew": true
+    },
+    {
+      "id": 601, "name": "ساعة ذكية Xiaomi Smart Band 8", "brand": "Xiaomi", "basePrice": 2100, "discountPercentage": 10, "stock": 25, "categoryId": "smartwatches", "countryOfOrigin": "فيتنام", "dateAdded": "2025-08-10",
+      "images": ["https://placehold.co/600x600/1f2937/ffffff?text=Mi+Band+8"], "description": "الجيل الجديد من السوار الذكي مع شاشة أكبر، قياس الأكسجين، وتتبع رياضي متقدم.", "isNew": true, "bestSeller": true
+    },
+    {
+      "id": 602, "name": "Samsung Galaxy Watch 6", "brand": "Samsung", "basePrice": 11500, "discountPercentage": 0, "stock": 12, "categoryId": "smartwatches", "countryOfOrigin": "كوريا الجنوبية", "dateAdded": "2025-08-18",
+      "images": ["https://placehold.co/600x600/d1d5db/111827?text=Galaxy+Watch+6"], "description": "ساعة ذكية أنيقة مع شاشة Super AMOLED، تتبع النوم، وقياس تكوين الجسم.",
+      "isExclusive": true
+    },
+    {
+      "id": 701, "name": "بطاقة ذاكرة SanDisk Ultra 128GB", "brand": "SanDisk", "basePrice": 400, "discountPercentage": 0, "stock": 0, "categoryId": "memory", "countryOfOrigin": "ماليزيا", "dateAdded": "2025-04-05",
+      "images": ["https://placehold.co/600x600/ef4444/ffffff?text=SanDisk%0A128GB"], "description": "بطاقة تخزين موثوقة بسرعة Class 10 وسعة 128 GB."
+    },
+    {
+      "id": 702, "name": "فلاش ميموري SanDisk Ultra Dual Drive 256GB", "brand": "SanDisk", "basePrice": 950, "discountPercentage": 5, "stock": 50, "categoryId": "memory", "countryOfOrigin": "ماليزيا", "dateAdded": "2025-07-30",
+      "images": ["https://placehold.co/600x600/6b7280/ffffff?text=SanDisk+Dual+Drive"], "description": "فلاش ميموري بمنفذ مزدوج (USB-A و USB-C) لنقل الملفات بسهولة بين أجهزتك."
+    },
+    {
+      "id": 801, "name": "ذراع تحكم للألعاب Razer Kishi V2", "brand": "Razer", "basePrice": 3200, "discountPercentage": 0, "stock": 18, "categoryId": "game-accessories", "countryOfOrigin": "تايوان", "dateAdded": "2025-08-20",
+      "images": ["https://placehold.co/600x600/050505/4ade80?text=Razer+Kishi+V2"], "description": "حوّل هاتفك إلى جهاز ألعاب محمول مع ذراع التحكم عالية الجودة من Razer.",
+      "isNew": true, "isExclusive": true
+    },
+    {
+      "id": 901, "name": "حامل هاتف للسيارة UGREEN", "brand": "UGREEN", "basePrice": 550, "discountPercentage": 0, "stock": 40, "categoryId": "holders", "countryOfOrigin": "الصين", "dateAdded": "2025-07-18",
+      "images": ["https://placehold.co/600x600/334155/ffffff?text=UGREEN+Holder"], "description": "حامل هاتف يثبت في فتحة مكيف الهواء، قوي ومناسب لجميع الهواتف.", "bestSeller": true
+    },
+    {
+      "id": 1, "name": "عرض الحماية الكاملة", "brand": "SCAR Bundles", "basePrice": 1200, "discountPercentage": 0, "stock": 15, "categoryId": "bundles", "countryOfOrigin": "متعدد", "dateAdded": "2025-08-22",
+      "images": ["https://placehold.co/600x600/a78bfa/ffffff?text=Full+Protection%0ABundle"], "description": "احصل على حماية متكاملة لهاتفك مع هذا العرض المميز الذي يجمع بين كفر شفاف قوي وواقي شاشة عالي الجودة.",
+      "items": [{ "productId": 201, "quantity": 1 }, { "productId": 401, "quantity": 1 }],
+      "bestSeller": true
+    },
+    {
+      "id": 2, "name": "عرض الطاقة المتنقلة", "brand": "SCAR Bundles", "basePrice": 4500, "discountPercentage": 0, "stock": 8, "categoryId": "bundles", "countryOfOrigin": "متعدد", "dateAdded": "2025-08-25",
+      "images": ["https://placehold.co/600x600/f59e0b/ffffff?text=Power+On-The-Go"], "description": "لا تنفد بطاريتك أبدًا! عرض يجمع بين أقوى باور بانك من Anker مع شاحن سيارة سريع وكابل متين.",
+      "items": [{ "productId": 102, "quantity": 1 }, { "productId": 502, "quantity": 1 }],
+      "isNew": true, "isExclusive": true
+    }
+  ]
+}
