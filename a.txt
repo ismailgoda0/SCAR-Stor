@@ -1,0 +1,6 @@
+    { "id": "bundles", "name": "عروض خاصة", "icon": "package-plus", "prefix": "B" },
+
+00
+0
+0
+0
