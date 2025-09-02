@@ -1,0 +1,33 @@
+{
+  "currency": "ج.م",
+  "whatsappNumber": "201000000000",
+  "phone": "02-2xxxxxxx",
+  "address": "القاهرة, مصر",
+  "facebook": "https://facebook.com",
+  "youtube": "https://youtube.com",
+  "tiktok": "https://tiktok.com",
+  "googleSheetWebAppUrl": "https://script.google.com/macros/s/AKfycbyt5Su7KKJKY1xVAh6ic_GjrYAseDkK51hfM4K_v_oSbOJMEkORZ4WZ1h-c_iP6D2Bz/exec",
+  "googleSheetReviewsUrl": "https://script.google.com/macros/s/AKfycbyZnBZxXpDBa-3Xyzs6ZRATJ4kf8Y9lwbQQMVo5fTJ6VBGwS3BilHnZIFRw9MGVl-U/exec",
+    "googleSheetcomplaintUrl": "NEW",
+
+  "shippingOptions": [
+    { "name": "شحن عادي (3-5 أيام)", "cost": 50 },
+    { "name": "شحن سريع (1-2 أيام)", "cost": 100 }
+  ],
+  "governorates": [
+    "القاهرة",
+    "الجيزة",
+    "الإسكندرية",
+    "الدقهلية",
+    "الشرقية",
+    "الغربية",
+    "البحيرة",
+    "المنوفية",
+    "القليوبية",
+    "كفر الشيخ",
+    "دمياط"
+  ],
+  "productsPerPage": 5,
+  "lowStockThreshold": 5,
+  "storageVersion": "v26"
+}
