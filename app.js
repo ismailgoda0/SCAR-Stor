@@ -129,7 +129,7 @@ const ScarStore = {
 
     async loadStoreData() {
         try {
-            const storeDataFile = this.state.priceMode === 'wholesale' ? 'data/store-data-2.json' : 'data/store-data.json';
+            const storeDataFile = this.state.priceMode === 'wholesale' ? 'store-data-2.json' : 'store-data.json';
             const storeResponse = await fetch(storeDataFile);
             if (!storeResponse.ok) throw new Error(`Could not load ${storeDataFile}.`);
             
@@ -1102,3 +1102,4 @@ navigateTo(url, fromProductPage = false) {
         },
     }
 };
+
