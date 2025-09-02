@@ -111,7 +111,7 @@ const ScarStore = {
     
     async loadConfig() {
         try {
-            const configResponse = await fetch('data/config.json');
+            const configResponse = await fetch('config.json');
             if (!configResponse.ok) throw new Error('Config file not found');
             this.state.storeData.config = await configResponse.json();
             this.state.productsPerPage = this.state.storeData.config.productsPerPage || 12;
@@ -1102,4 +1102,5 @@ navigateTo(url, fromProductPage = false) {
         },
     }
 };
+
 
