@@ -1,4 +1,4 @@
-// FILE: events.js (المحتوى الكامل والنهائي للملف)
+// FILE: events.js 
 
 // أولاً، نقوم بإضافة وظيفة إنشاء رقم الطلب إلى الكائن الرئيسي ScarStore مباشرةً
 ScarStore.generateOrderId = function() {
@@ -205,6 +205,7 @@ Object.assign(ScarStore, {
         },
 
         handleBodyClick(e) {
+            
             const target = e.target;
             const handlePriceModeToggle = () => {
                 if (ScarStore.state.cart.length > 0) {
@@ -227,6 +228,8 @@ Object.assign(ScarStore, {
                 '#more-filters-toggle-btn': (btn) => { bootstrap.Dropdown.getOrCreateInstance(btn).toggle(); },
                 'a[href^="?"]': (el) => { e.preventDefault(); ScarStore.Router.navigateTo(el.getAttribute('href')); },
                 'a[href="/"]': (el) => { e.preventDefault(); ScarStore.Router.navigateTo('/'); },
+                '.close-modal-btn': () => ScarStore.Modals.closeLast(),
+
                 '#price-mode-toggle': handlePriceModeToggle,
                 '#toggle-categories-view-btn': () => {
                     ScarStore.state.isAllCategoriesView = !ScarStore.state.isAllCategoriesView;
@@ -259,13 +262,13 @@ Object.assign(ScarStore, {
                 },
                 '.modal-overlay': el => { if (e.target === el && el.dataset.closeable === "true") ScarStore.Modals.close(el.querySelector('.modal-content')); },
                 '.love-btn': el => { e.stopPropagation(); ScarStore.Wishlist.toggle(el.dataset.id); },
-                '.remove-from-wishlist-btn': el => { 
-                    e.stopPropagation(); 
-                    const productCard = el.closest('.flex.items-center.gap-4');
-                    ScarStore.Wishlist.toggle(el.dataset.id, () => {
-                        gsap.to(productCard, { height: 0, opacity: 0, padding: 0, margin: 0, duration: 0.3, onComplete: () => productCard.remove() });
-                    }); 
-                },
+              '.remove-from-wishlist-btn': (el, e) => { // لاحظ إضافة القوسين و 'e'
+    e.stopPropagation(); 
+    const productCard = el.closest('.flex.items-center.gap-4');
+    ScarStore.Wishlist.toggle(el.dataset.id, () => {
+        gsap.to(productCard, { height: 0, opacity: 0, padding: 0, margin: 0, duration: 0.3, onComplete: () => productCard.remove() });
+    });  
+},
                 '.pagination-btn': el => {
                     if (el.disabled) return;
                     ScarStore.state.currentPage = Number(el.dataset.page);
@@ -490,15 +493,16 @@ Object.assign(ScarStore, {
             try {
                 const response = await fetch(googleSheetUrl, { method: 'POST', body: formData });
                 const result = await response.json();
-                if (result.result === "success") {
-                    ScarStore.Modals.closeLast();
-                    ScarStore.Cart.clear();
-                    ScarStore.Modals.show(ScarStore.Templates.getOrderSuccessModalHtml(orderId), false);
-                    const pastOrders = JSON.parse(localStorage.getItem(`scarOrders_${ScarStore.state.storeData.config.storageVersion}`) || '[]');
-                    pastOrders.push({ id: orderId, date: new Date().toISOString() });
-                    localStorage.setItem(`scarOrders_${ScarStore.state.storeData.config.storageVersion}`, JSON.stringify(pastOrders));
-                    lucide.createIcons();
-                } else {
+             if (result.result === "success") {
+    ScarStore.Cart.clear();
+    // ✅ نستخدم الدالة الجديدة لاستبدال المحتوى بسلاسة
+    ScarStore.Modals.replaceContent(ScarStore.Templates.getOrderSuccessModalHtml(orderId));
+    
+    // باقي الكود يبقى كما هو
+    const pastOrders = JSON.parse(localStorage.getItem(`scarOrders_${ScarStore.state.storeData.config.storageVersion}`) || '[]');
+    pastOrders.push({ id: orderId, date: new Date().toISOString() });
+    localStorage.setItem(`scarOrders_${ScarStore.state.storeData.config.storageVersion}`, JSON.stringify(pastOrders));
+} else {
                     throw new Error(result.message || 'فشل إرسال الطلب');
                 }
             } catch (error) {

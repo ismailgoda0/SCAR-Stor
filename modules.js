@@ -357,7 +357,7 @@ Object.assign(ScarStore, {
                 <i data-lucide="copy" class="w-5 h-5"></i>
             </button>
         </div>
-        <button class="primary-btn w-full close-modal-btn">حسناً</button>
+        <button class="primary-btn w-full">حسناً</button>
     </div>
     `;
 },
@@ -376,9 +376,21 @@ Object.assign(ScarStore, {
 
                 if (item.options) {
                     const optionsEntries = Object.entries(item.options);
-                    if (optionsEntries.length > 0) {
-                        optionsHtml = `<div class="flex flex-col items-start gap-1 text-xs text-slate-500 mt-1">${optionsEntries.map(([key, value]) => `<div><span class="font-semibold">${key}:</span> ${value}</div>`).join('')}</div>`;
-                    }
+                   if (optionsEntries.length > 0) {
+    const optionsArray = optionsEntries.map(([key, value]) => {
+        if (key === 'اللون') {
+            return `
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold">${key}:</span>
+                    <span class="block w-4 h-4 rounded-full border" style="background-color: ${value};" title="${value}"></span>
+                </div>
+            `;
+        }
+        // لعرض باقي الخيارات كنص عادي
+        return `<div><span class="font-semibold">${key}:</span> ${value}</div>`;
+    });
+    optionsHtml = `<div class="flex flex-col items-start gap-1 text-xs text-slate-500 mt-1">${optionsArray.join('')}</div>`;
+}
                 }
                 const imageUrl = (product.isBundle && product.images && product.images.length > 0) ? product.images[0] : product.heroImage || (product.isBundle ? productMap.get(product.items[0].productId)?.images[0] : product.images[0]);
                 return `<div class="flex items-start gap-4 py-3"><img src="${imageUrl}" class="w-20 h-20 rounded-md object-cover flex-shrink-0" onerror="this.onerror=null;this.src='https://placehold.co/100x100/e2e8f0/475569?text=SCAR';"><div class="flex-grow"><p class="font-bold text-slate-800">${product.name}</p><p class="text-sm text-slate-500">الكمية: ${item.quantity}</p>${optionsHtml}</div><p class="font-bold text-slate-800 text-sm flex-shrink-0">${(item.price * item.quantity).toFixed(2)} ${currency}</p></div>`;
@@ -656,6 +668,33 @@ getMobilePageHtml(type) {
 // في ملف modules.js، استبدل كائن Modals بالكامل بهذا الكود الجديد والمكتمل
 
 Modals: {
+    replaceContent(newContentHtml) {
+    const overlay = document.getElementById('the-one-overlay');
+    if (!overlay || !overlay.classList.contains('is-visible')) {
+        this.show(newContentHtml);
+        return;
+    }
+    const oldContent = overlay.querySelector('.modal-content');
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = newContentHtml;
+    const newContent = tempDiv.firstElementChild;
+
+    // حركة خروج للمحتوى القديم
+    gsap.to(oldContent, {
+        scale: 0.9, autoAlpha: 0, duration: 0.2, ease: 'power2.in',
+        onComplete: () => {
+            oldContent.remove();
+            // إضافة المحتوى الجديد مع حركة دخول
+            overlay.appendChild(newContent);
+            gsap.fromTo(newContent,
+                { scale: 0.9, autoAlpha: 0 },
+                { scale: 1, autoAlpha: 1, duration: 0.3, ease: 'power2.out' }
+            );
+            lucide.createIcons(); // مهم لتفعيل الأيقونات في المحتوى الجديد
+        }
+    });
+},
     show(contentHtml, closeOnOverlayClick = true) {
         const overlay = document.getElementById('the-one-overlay');
         if (!overlay) return console.error("Overlay not found!");
