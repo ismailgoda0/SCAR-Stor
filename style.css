@@ -538,7 +538,7 @@ input[type=number] {
 }
 
 .form-input.iti-input {
-    padding-right: 56px !important;
+    padding-right: 10px !important;
     direction: ltr;
     text-align: left;
 }
@@ -1244,3 +1244,8 @@ input[type=number] {
 }
 
 }
+
+/* 
+body:has(#the-one-overlay.is-visible) #mobile-nav {
+    display: none;
+} */

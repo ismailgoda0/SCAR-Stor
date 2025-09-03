@@ -87,8 +87,11 @@ const ScarStore = {
         this.Events.setup();
         this.Events.setupProductCardHover();
         
-        if (!this.state.userInfo.phone) {
+        // Logic to prompt for phone on first visit ever
+        const hasVisited = localStorage.getItem(`scarVisited_${storageVersion}`);
+        if (!hasVisited) {
             setTimeout(() => { this.Modals.promptForPhone(); }, 2000);
+            localStorage.setItem(`scarVisited_${storageVersion}`, 'true');
         }
 
         this.Router.handleRouteChange();
@@ -242,6 +245,10 @@ const ScarStore = {
             const view = params.get('view');
             const searchTerm = params.get('search');
 
+            // Hide tracking banner by default on every route change
+            const trackingBanner = document.getElementById('tracking-banner');
+            if (trackingBanner) trackingBanner.classList.add('hidden');
+
             Object.values(ScarStore.DOMElements).forEach(el => {
                 if (el?.id?.endsWith('-content')) el.classList.add('hidden');
             });
@@ -252,6 +259,15 @@ const ScarStore = {
             } else if (productId) {
                 ScarStore.state.currentView = 'product';
                 await ScarStore.UI.renderProductPage(productId);
+
+                // Logic to prompt for name on first product page visit
+                const storageVersion = ScarStore.state.storeData.config.storageVersion || 'v-fallback';
+                const namePrompted = localStorage.getItem(`scarNamePrompted_${storageVersion}`);
+                if (!ScarStore.state.userInfo.name && !namePrompted) {
+                    setTimeout(() => { ScarStore.Modals.promptForName(); }, 1500);
+                    localStorage.setItem(`scarNamePrompted_${storageVersion}`, 'true');
+                }
+
             } else if (categoryId || view || searchTerm !== null || params.has('page') || params.has('brand') || params.has('sort') || params.has('minPrice') || params.has('maxPrice')) {
                 ScarStore.state.currentView = 'category';
                 this.setupCategoryView(params);
@@ -626,6 +642,7 @@ const ScarStore = {
         renderHomePage() {
             const { DOMElements } = ScarStore;
             DOMElements.homeContent.classList.remove('hidden');
+            document.getElementById('tracking-banner').classList.remove('hidden');
             this.renderHomeCategories();
             this.renderBundleOffers();
             this.renderDiscountedProducts();
@@ -974,7 +991,7 @@ const ScarStore = {
             if (ScarStore.state.priceMode === 'wholesale' && product.variants && product.variants['موديل الهاتف']) {
                 ScarStore.Wholesale.initializeCardSelection(productPageContent, product);
             }
-                                                                                                
+                                                                                                        
             this.syncProductCardViews(productId);
             this.initializeSearchableSelects(productPageContent);
             lucide.createIcons();

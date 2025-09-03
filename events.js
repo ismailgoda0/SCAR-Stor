@@ -1,13 +1,11 @@
-// FILE: events.js 
+// FILE: events.js
 
-// أولاً، نقوم بإضافة وظيفة إنشاء رقم الطلب إلى الكائن الرئيسي ScarStore مباشرةً
 ScarStore.generateOrderId = function() {
     const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
     const timestamp = Date.now().toString().slice(-4);
     return `SC-${timestamp}-${randomPart}`;
 };
 
-// ثانياً، نستخدم Object.assign لإضافة كائن "Events" إلى كائن ScarStore الموجود بالفعل
 Object.assign(ScarStore, {
     Events: {
         setup() {
@@ -58,6 +56,65 @@ Object.assign(ScarStore, {
                     }, 300);
                 }
             });
+        },
+
+        async handleTrackOrder(form) {
+            const { config } = ScarStore.state.storeData;
+            const orderId = new FormData(form).get('orderId').trim().toUpperCase();
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('.button-text');
+            const spinner = submitBtn.querySelector('.spinner');
+
+            if (!orderId) {
+                ScarStore.Toast.show('الرجاء إدخال معرّف الطلب', 'danger');
+                return;
+            }
+
+            btnText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+            submitBtn.disabled = true;
+
+            try {
+                const requestUrl = `${config.googleSheetWebAppUrl}?action=search&id=${orderId}`;
+                const response = await fetch(requestUrl);
+
+                if (!response.ok) {
+                    throw new Error(`خطأ من الخادم: ${response.status} ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+
+                if (result.result === 'success' && result.data) {
+                    const modalFragment = ScarStore.Templates.getOrderStatusModalHtml(result.data);
+                    const tempDiv = document.createElement('div');
+                    tempDiv.appendChild(modalFragment);
+                    ScarStore.Modals.replaceContent(tempDiv.innerHTML);
+                } else {
+                    const notFoundModalFragment = ScarStore.Templates.getOrderNotFoundModalHtml(orderId);
+                    const tempDiv = document.createElement('div');
+                    tempDiv.appendChild(notFoundModalFragment);
+                    ScarStore.Modals.replaceContent(tempDiv.innerHTML);
+                }
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error("حدث خطأ أثناء تتبع الطلب:", error);
+                
+                let errorMessage = 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.';
+                if (error instanceof TypeError) {
+                    errorMessage = 'فشل الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.';
+                } else if (error instanceof SyntaxError) {
+                    errorMessage = 'استجابة غير صالحة من الخادم. يرجى المحاولة لاحقًا.';
+                }
+                
+                ScarStore.Toast.show(errorMessage, 'danger');
+                ScarStore.Modals.closeLast();
+                
+            } finally {
+                btnText.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
         },
 
         setupProductCardHover() {
@@ -205,42 +262,37 @@ Object.assign(ScarStore, {
         },
 
         handleBodyClick(e) {
-            
             const target = e.target;
             
-        const handlePriceModeToggle = () => {
-    // التحقق إذا كان الوضع الحالي هو "قطاعي" (retail)
-    if (ScarStore.state.priceMode === 'retail') {
-        // ✅ استدعاء الدالة الجديدة بكل بساطة
-        ScarStore.Modals.showAlert(
-            'تنبيه',
-            'لا يمكن التوجه إلى وضع الجملة في الوقت الحالي، جاري تطويره. انتظرونا!'
-        );
-        return; // للخروج من الدالة ومنع التبديل
-    }
+            const handlePriceModeToggle = () => {
+                if (ScarStore.state.priceMode === 'retail') {
+                    ScarStore.Modals.showAlert('تنبيه', 'لا يمكن التوجه إلى وضع الجملة في الوقت الحالي، جاري تطويره. انتظرونا!');
+                    return;
+                }
 
-    // الكود القديم للتبديل من جملة إلى قطاعي يبقى كما هو
-    if (ScarStore.state.cart.length > 0) {
-        ScarStore.Modals.showConfirmation('تغيير وضع الأسعار', 'سيتم إفراغ سلة التسوق الخاصة بك عند التبديل. هل أنت متأكد؟',
-            () => {
-                ScarStore.Cart.clear();
-                ScarStore.state.priceMode = 'wholesale';
-                ScarStore.UI.updatePriceModeToggle();
-                ScarStore.resetAndReloadApp();
-            }
-        );
-    } else {
-        ScarStore.state.priceMode = 'wholesale';
-        ScarStore.UI.updatePriceModeToggle();
-        ScarStore.resetAndReloadApp();
-    }
-};
+                if (ScarStore.state.cart.length > 0) {
+                    ScarStore.Modals.showConfirmation('تغيير وضع الأسعار', 'سيتم إفراغ سلة التسوق الخاصة بك عند التبديل. هل أنت متأكد؟',
+                        () => {
+                            ScarStore.Cart.clear();
+                            ScarStore.state.priceMode = 'wholesale';
+                            ScarStore.UI.updatePriceModeToggle();
+                            ScarStore.resetAndReloadApp();
+                        }
+                    );
+                } else {
+                    ScarStore.state.priceMode = 'wholesale';
+                    ScarStore.UI.updatePriceModeToggle();
+                    ScarStore.resetAndReloadApp();
+                }
+            };
+
             const delegates = {
                 '#more-filters-toggle-btn': (btn) => { bootstrap.Dropdown.getOrCreateInstance(btn).toggle(); },
                 'a[href^="?"]': (el) => { e.preventDefault(); ScarStore.Router.navigateTo(el.getAttribute('href')); },
                 'a[href="/"]': (el) => { e.preventDefault(); ScarStore.Router.navigateTo('/'); },
                 '.close-modal-btn': () => ScarStore.Modals.closeLast(),
-
+                '[data-action="close-modal"]': () => ScarStore.Modals.closeLast(),
+                '#track-order-btn': () => ScarStore.Modals.showOrderTracking(),
                 '#price-mode-toggle': handlePriceModeToggle,
                 '#toggle-categories-view-btn': () => {
                     ScarStore.state.isAllCategoriesView = !ScarStore.state.isAllCategoriesView;
@@ -251,6 +303,21 @@ Object.assign(ScarStore, {
                     ScarStore.Modals.show(ScarStore.Templates.getComplaintModalHtml());
                     ScarStore.Modals.initIntlTelInput('#complaint-phone');
                     lucide.createIcons();
+                    const { phone } = ScarStore.state.userInfo;
+                    const iti = ScarStore.state.phoneInputInstances['complaint-phone'];
+                    if (iti && phone) {
+                        iti.setNumber(phone);
+                    }
+                },
+                '.past-order-item': (el) => {
+                    const orderId = el.dataset.orderId;
+                    const input = el.closest('form').querySelector('#order-id-input');
+                    if (orderId && input) {
+                        input.value = orderId;
+                        input.focus();
+                        el.closest('#past-orders-list').querySelectorAll('.past-order-item').forEach(item => item.classList.remove('bg-indigo-100'));
+                        el.classList.add('bg-indigo-100');
+                    }
                 },
                 '[data-action="add-to-cart"]': el => this.handleAddToCartClick(el),
                 '[data-action="remove-from-cart"]': el => {
@@ -273,13 +340,35 @@ Object.assign(ScarStore, {
                 },
                 '.modal-overlay': el => { if (e.target === el && el.dataset.closeable === "true") ScarStore.Modals.close(el.querySelector('.modal-content')); },
                 '.love-btn': el => { e.stopPropagation(); ScarStore.Wishlist.toggle(el.dataset.id); },
-              '.remove-from-wishlist-btn': (el, e) => { // لاحظ إضافة القوسين و 'e'
-    e.stopPropagation(); 
-    const productCard = el.closest('.flex.items-center.gap-4');
-    ScarStore.Wishlist.toggle(el.dataset.id, () => {
-        gsap.to(productCard, { height: 0, opacity: 0, padding: 0, margin: 0, duration: 0.3, onComplete: () => productCard.remove() });
-    });  
-},
+                '.remove-from-wishlist-btn': (el, ev) => {
+                    ev.stopPropagation();
+                    const productId = el.dataset.id;
+                    if (!productId) return;
+                
+                    const itemElement = el.closest('.flex.items-center.gap-4');
+                
+                    ScarStore.Wishlist.toggle(productId);
+                
+                    if (itemElement) {
+                        gsap.to(itemElement, {
+                            duration: 0.3,
+                            opacity: 0,
+                            height: 0,
+                            paddingTop: 0,
+                            paddingBottom: 0,
+                            marginTop: 0,
+                            marginBottom: 0,
+                            ease: 'power2.in',
+                            onComplete: () => {
+                                itemElement.remove();
+                                const wishlistContainer = document.querySelector('#wishlist-dropdown .flex-grow, .mobile-modal-body');
+                                if (wishlistContainer && wishlistContainer.children.length === 0) {
+                                     ScarStore.Wishlist.updateUI();
+                                }
+                            }
+                        });
+                    }
+                },
                 '.pagination-btn': el => {
                     if (el.disabled) return;
                     ScarStore.state.currentPage = Number(el.dataset.page);
@@ -305,15 +394,6 @@ Object.assign(ScarStore, {
                 '#back-to-top-btn': () => window.scrollTo({ top: 0, behavior: 'smooth' }),
                 '#back-btn': () => this.handleBackClick(),
                 '#share-product-btn': el => this.handleShareClick(el),
-                '#copy-order-id-btn': el => {
-                    const orderId = el.dataset.orderId;
-                    navigator.clipboard.writeText(orderId).then(() => {
-                        ScarStore.Toast.show('تم نسخ معرّف الطلب!', 'info');
-                    }).catch(err => {
-                        console.error('Failed to copy: ', err);
-                        ScarStore.Toast.show('فشل النسخ', 'danger');
-                    });
-                },
                 '[data-action="open-model-selector"]': el => {
                     const productContainer = el.closest('[data-id]');
                     if (!productContainer) return;
@@ -413,9 +493,14 @@ Object.assign(ScarStore, {
         
         handleFormSubmit(e) {
             const formId = e.target.id;
+
             if (formId === 'checkout-form') {
                 e.preventDefault();
                 this.handleOrderSubmit(e.target);
+            }
+            if (formId === 'order-tracking-form') {
+                e.preventDefault();
+                this.handleTrackOrder(e.target);
             }
             if (formId === 'complaint-form') {
                 e.preventDefault();
@@ -504,16 +589,31 @@ Object.assign(ScarStore, {
             try {
                 const response = await fetch(googleSheetUrl, { method: 'POST', body: formData });
                 const result = await response.json();
-             if (result.result === "success") {
-    ScarStore.Cart.clear();
-    // ✅ نستخدم الدالة الجديدة لاستبدال المحتوى بسلاسة
-    ScarStore.Modals.replaceContent(ScarStore.Templates.getOrderSuccessModalHtml(orderId));
-    
-    // باقي الكود يبقى كما هو
-    const pastOrders = JSON.parse(localStorage.getItem(`scarOrders_${ScarStore.state.storeData.config.storageVersion}`) || '[]');
-    pastOrders.push({ id: orderId, date: new Date().toISOString() });
-    localStorage.setItem(`scarOrders_${ScarStore.state.storeData.config.storageVersion}`, JSON.stringify(pastOrders));
-} else {
+                if (result.result === "success") {
+
+                    const newName = formData.get('name');
+                    const newPhone = fullPhoneNumber; 
+                    const newGovernorate = formData.get('governorate');
+                    const newAddress = formData.get('address');
+
+                    if (newName !== ScarStore.state.userInfo.name || newPhone !== ScarStore.state.userInfo.phone || newGovernorate !== ScarStore.state.userInfo.governorate || newAddress !== ScarStore.state.userInfo.address) {
+                        ScarStore.state.userInfo.name = newName;
+                        ScarStore.state.userInfo.phone = newPhone;
+                        ScarStore.state.userInfo.governorate = newGovernorate;
+                        ScarStore.state.userInfo.address = newAddress;
+                        ScarStore.Modals.saveUserInfo();
+                        ScarStore.Toast.show('تم تحديث بياناتك المحفوظة', 'info');
+                    }
+
+                    ScarStore.Cart.clear();
+                    ScarStore.Modals.replaceContent(ScarStore.Templates.getOrderSuccessModalHtml(orderId));
+                    
+                    const storageVersion = ScarStore.state.storeData.config.storageVersion || 'v-fallback';
+                    const pastOrders = JSON.parse(localStorage.getItem(`scarOrders_${storageVersion}`) || '[]');
+                    pastOrders.push({ id: orderId, date: new Date().toISOString() });
+                    localStorage.setItem(`scarOrders_${storageVersion}`, JSON.stringify(pastOrders));
+
+                } else {
                     throw new Error(result.message || 'فشل إرسال الطلب');
                 }
             } catch (error) {

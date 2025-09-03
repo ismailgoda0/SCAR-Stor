@@ -6,9 +6,11 @@
   "facebook": "https://facebook.com",
   "youtube": "https://youtube.com",
   "tiktok": "https://tiktok.com",
-  "googleSheetWebAppUrl": "https://script.google.com/macros/s/AKfycbyt5Su7KKJKY1xVAh6ic_GjrYAseDkK51hfM4K_v_oSbOJMEkORZ4WZ1h-c_iP6D2Bz/exec",
+  "googleSheetWebAppUrl": "https://script.google.com/macros/s/AKfycbw0Y3Cpi0aEw0s-viy92zKsbF4M-pHkVW_Fhr_5tToLoFedHAQGKMlLZoHag7Q0i_E5sA/exec",
+  "googleSheetOrderStatusUrl": "https://script.google.com/macros/s/AKfycbw0Y3Cpi0aEw0s-viy92zKsbF4M-pHkVW_Fhr_5tToLoFedHAQGKMlLZoHag7Q0i_E5sA/exec",
+
   "googleSheetReviewsUrl": "https://script.google.com/macros/s/AKfycbyZnBZxXpDBa-3Xyzs6ZRATJ4kf8Y9lwbQQMVo5fTJ6VBGwS3BilHnZIFRw9MGVl-U/exec",
-    "googleSheetcomplaintUrl": "NEW",
+    "googleSheetcomplaintUrl": "https://script.google.com/macros/s/AKfycbzOZH6RaZ45z0FRaDc5KZuoslVYrHX6EV2o2fIx3-79RhIGs6XOFKWYSDCyjqYIMjEY/exec",
 
   "shippingOptions": [
     { "name": "شحن عادي (3-5 أيام)", "cost": 50 },

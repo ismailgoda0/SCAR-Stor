@@ -102,8 +102,22 @@
                     <p class="text-lg md:text-xl max-w-2xl mx-auto opacity-90 relative z-10">كل ما تحتاجه لهاتفك في مكان واحد: شواحن، جرابات، سماعات والمزيد بأفضل الأسعار.</p>
                 </section>
                 
-                <section id="categories-section" class="mb-12">
-                     <div class="flex justify-between items-center mb-6">
+<section id="hero-section" class="hero-section ...">
+    </section>
+
+<section id="tracking-banner" class="hidden bg-white p-4 rounded-xl shadow-md border mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+        <i data-lucide="package-check" class="w-8 h-8 text-indigo-500"></i>
+        <div>
+            <h3 class="font-bold text-lg text-slate-800">هل لديك طلب وتود متابعته؟</h3>
+            <p class="text-sm text-slate-500">أدخل معرّف الطلب الخاص بك وتتبع حالته خطوة بخطوة.</p>
+        </div>
+    </div>
+    <button id="track-order-btn" class="primary-btn interactive-btn !py-2.5 w-full sm:w-auto flex-shrink-0">
+        متابعة الطلب
+    </button>
+</section>
+<section id="categories-section" class="mb-12">                     <div class="flex justify-between items-center mb-6">
                          <h2 class="text-3xl font-bold">تصفح حسب القسم</h2>
                          <button id="toggle-categories-view-btn" class="text-indigo-600 font-bold hover:underline flex items-center gap-2">
                              <i data-lucide="layout-grid" class="w-5 h-5"></i>
@@ -328,6 +342,42 @@
                 </div>
             </div>
         </template>
+<template id="order-tracking-modal-template">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-md">
+        <div class="p-5 border-b flex justify-between items-center">
+            <h2 class="text-2xl font-bold">متابعة الطلب</h2>
+            <button class="close-modal-btn"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <form id="order-tracking-form">
+            <div class="p-6">
+                <label for="order-id-input" class="block text-sm font-medium text-slate-700 mb-1">أدخل معرّف الطلب (Order ID)</label>
+                <input type="text" id="order-id-input" name="orderId" class="form-input text-left" placeholder="مثال: SC-1234-ABCDEF" required>
+                
+                <div id="past-orders-container" class="mt-4">
+                    <h4 class="font-semibold text-sm text-slate-600 mb-2">أو اختر من طلباتك السابقة:</h4>
+                    <div id="past-orders-list" class="space-y-2 max-h-32 overflow-y-auto custom-scrollbar border rounded-md p-2 bg-slate-50">
+                        </div>
+                </div>
+            </div>
+            <div class="p-5 border-t bg-slate-50">
+                <button type="submit" class="primary-btn w-full interactive-btn flex items-center justify-center gap-2 !py-2.5">
+                    <span class="button-text">متابعة</span>
+                    <div class="spinner hidden"></div>
+                </button>
+            </div>
+        </form>
+    </div>
+</template>
+<template id="order-status-modal-template">
+     <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-lg">
+        <div class="p-5 border-b flex justify-between items-center">
+            <h2 class="text-2xl font-bold">حالة الطلب</h2>
+            <button class="close-modal-btn"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <div id="status-display" class="p-6 space-y-4">
+            </div>
+    </div>
+</template>
 
         <template id="card-action-controls-template">
             <div class="flex items-center gap-2">
@@ -440,7 +490,7 @@
         <h2 class="text-2xl font-bold mt-4 mb-2" id="alert-title"></h2>
         <p class="text-slate-500 mb-6" id="alert-message"></p>
         <div class="flex justify-center">
-            <button class="primary-btn w-full">حسناً</button>
+<button onclick="ScarStore.Modals.closeLast()" class="primary-btn w-full">حسناً</button>
         </div>
     </div>
 </template>
@@ -479,6 +529,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
