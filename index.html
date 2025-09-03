@@ -46,7 +46,7 @@
     
     <div id="preloader">
         <div class="logo-container">
-            <img src="icon/logo2.png" alt="SCAR Store Logo" class="h-20 w-20">
+            <img src="icon/logo2.png" alt="SCAR Store Logo" class="h-64 w-64">
         </div>
     </div>
 
@@ -141,8 +141,8 @@
             </div>
 
             <div id="category-content" class="hidden">
-                <h2 id="products-title" class="text-3xl font-bold mb-6">المنتجات</h2>
-                
+<div id="products-title-container" class="flex flex-col sm:flex-row items-center gap-3 mb-8">
+    </div>                
                 <aside id="filter-bar" class="sticky top-[80px] z-30 bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-md border mb-8">
     
                     <nav id="filter-nav-wrapper" class="d-flex align-items-end gap-3">
@@ -169,14 +169,7 @@
                                 <button id="view-mode-list" class="p-1.5 rounded-md" title="عرض كقائمة"><i data-lucide="list" class="w-5 h-5 pointer-events-none"></i></button>
                             </div>
                         </div>
-                        <div class="filter-item" data-filter="main-category">
-                            <label for="filter-main-category" class="filter-label">القسم الرئيسي</label>
-                            <select id="filter-main-category" class="form-select"></select>
-                        </div>
-                        <div class="filter-item" data-filter="sub-category">
-                            <label for="filter-sub-category" class="filter-label">القسم الفرعي</label>
-                            <select id="filter-sub-category" class="form-select"></select>
-                        </div>
+                       
                         <div class="filter-item flex-grow" data-filter="search">
                             <label for="local-search-input" class="filter-label">بحث في القسم</label>
                             <div class="relative">
@@ -231,7 +224,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-right">
             <div id="footer-info" class="md:col-span-2 space-y-4">
                 <a href="/" class="flex items-center justify-start gap-2 flex-shrink-0">
-                    <img src="icon/logo2.png" alt="SCAR Store Logo" class="h-10 w-10">
+<img src="icon/logo2.png" alt="SCAR Store Logo" class="h-16 w-16">
                     <h1 class="text-3xl font-extrabold text-slate-800">SCAR</h1>
                 </a>
                 <p class="text-slate-500 max-w-md mx-0">متجر متخصص في توفير أحدث اكسسوارات الهواتف الذكية بأعلى جودة وأفضل الأسعار.</p>

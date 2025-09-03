@@ -200,7 +200,8 @@ main {
 .form-textarea,
 .ts-control {
     width: 100%;
-    background-color: var(--bg-accent);
+        background-color: var(--bg-accent);
+
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 0.75rem 1rem;
@@ -219,7 +220,7 @@ main {
 }
 
 .ts-control {
-    padding: 0.5rem 0.75rem !important;
+    padding: 0.5rem 1.75rem !important;
     box-shadow: none !important;
     display: flex;
     align-items: center;
@@ -236,7 +237,6 @@ main {
 
 /* --- Product Variants (Colors, etc.) --- */
 .color-swatch {
-    border: 2px solid #000;
     background-size: cover;
     background-position: center;
 }
@@ -259,7 +259,6 @@ main {
     justify-content: center;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
     border-radius: 50%;
 }
 
@@ -443,10 +442,11 @@ main {
     position: fixed;
     bottom: 1.25rem;
     left: 1.25rem;
-    z-index: 100;
-    display: flex;
+    z-index: 9999 !important; /* ✅ رفع الطبقة لأعلى قيمة ممكنة */
+    display: flex !important;       /* ✅ فرض الظهور ومنع الإخفاء */
     flex-direction: column;
     gap: 0.5rem;
+    pointer-events: none; /* ✅ السماح بالنقر "من خلال" الحاوية الشفافة */
 }
 
 .toast {
@@ -460,6 +460,8 @@ main {
     box-shadow: var(--shadow-lg);
     opacity: 0;
     transform: translateX(-120%);
+        pointer-events: auto;
+
 }
 
 .toast-success {
@@ -767,7 +769,7 @@ input[type=number] {
 /* --- Filter Bar --- */
 #filter-nav-wrapper {
     flex-wrap: nowrap;
-    overflow: hidden;
+    /* overflow: hidden; */
     min-width: 0;
 }
 
@@ -1245,7 +1247,138 @@ input[type=number] {
 
 }
 
-/* 
-body:has(#the-one-overlay.is-visible) #mobile-nav {
-    display: none;
-} */
+
+
+/* START: تنسيقات أزرار الخواص النصية (الطول، المقاس، الخ) */
+
+.product-option-value-text {
+    display: inline-block;
+    padding: 0.25rem 0.75rem; /* 4px 12px */
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md); /* 8px */
+    background-color: var(--bg-secondary);
+    font-size: 0.8rem; /* حجم خط أصغر قليلاً */
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.product-option-value-text:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+/* هذا الكود يغير شكل الزر عند تحديده */
+.product-option-label input:checked + .product-option-value-text {
+    border-color: var(--accent-color);
+    background-color: var(--accent-color);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    transform: translateY(-1px);
+}
+
+/* تعديل بسيط لدوائر الألوان لإضافة ظل خفيف كما طلبت */
+.color-swatch {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+/* END: تنسيقات أزرار الخواص النصية */
+
+
+.bg-slate-50{
+background-color: rgba(var(--bs-white-rgb),var(--bs-bg-opacity))!important
+}
+
+
+
+.ts-wrapper.variant-model-select .ts-control {
+    background-color: var(--bg-accent);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: none;
+
+}
+.ts-wrapper.variant-model-select .ts-control {
+    background-color: var(--bg-accent);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: none;
+    /* ✅ START: الإضافات الجديدة */
+    min-width: 180px; /* العرض الأدنى */
+    max-width: 240px; /* العرض الأقصى */
+    /* ✅ END: الإضافات الجديدة */
+}
+
+/* START: Auto-Hide Header on Scroll Styles (Mobile Only) */
+#filter-bar {
+    transition: transform 0.3s ease-in-out, top 0.3s ease-in-out;
+            
+}
+
+
+    #filter-bar.is-hidden {
+        top: -120px !important; 
+    }
+@media (max-width: 767px) {
+   
+#main-header{
+            /* transition: transform 0.4s cubic-bezier(0.0, 0.0, 0.0, 0.0); */
+
+}
+
+    #main-header.is-hidden {
+        transform: translateY(-100%) !important;
+    }
+
+}
+
+/* END: Auto-Hide Header on Scroll Styles */
+
+
+/* START: Custom Category Select Dropdown Styles */
+
+.category-select {
+    /* الشكل العام */
+    appearance: none; /* إزالة الشكل الافتراضي للمتصفح */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem 2.5rem 0.5rem 1rem; /* حشو داخلي لإفساح المجال للسهم */
+    
+    /* الخط والحجم */
+    font-size: 1.875rem; /* text-3xl */
+    font-weight: 800; /* extrabold */
+    line-height: 1.2;
+    color: var(--text-primary);
+    cursor: pointer;
+
+    /* السهم المخصص */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1.5em 1.5em;
+    
+    transition: color 0.2s ease-in-out;
+}
+
+.category-select:hover {
+    color: var(--accent-color);
+}
+
+.category-select:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* تنسيق للقسم الفرعي ليكون أصغر قليلاً */
+.sub-category-select {
+    font-size: 1.5rem; /* text-2xl */
+    font-weight: 700; /* bold */
+    color: var(--text-secondary);
+}
+
+/* END: Custom Category Select Dropdown Styles */

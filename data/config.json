@@ -10,7 +10,8 @@
   "googleSheetOrderStatusUrl": "https://script.google.com/macros/s/AKfycbw0Y3Cpi0aEw0s-viy92zKsbF4M-pHkVW_Fhr_5tToLoFedHAQGKMlLZoHag7Q0i_E5sA/exec",
 
   "googleSheetReviewsUrl": "https://script.google.com/macros/s/AKfycbyZnBZxXpDBa-3Xyzs6ZRATJ4kf8Y9lwbQQMVo5fTJ6VBGwS3BilHnZIFRw9MGVl-U/exec",
-    "googleSheetcomplaintUrl": "https://script.google.com/macros/s/AKfycbzOZH6RaZ45z0FRaDc5KZuoslVYrHX6EV2o2fIx3-79RhIGs6XOFKWYSDCyjqYIMjEY/exec",
+
+    "googleSheetcomplaintUrl": "https://script.google.com/macros/s/AKfycbw9wYNaVkaKCbd0XwXYRMeTnpYObP85VAvXC9ucfDkdaeAT5DrKMF6z7YfhkXWHKERI/exec",
 
   "shippingOptions": [
     { "name": "شحن عادي (3-5 أيام)", "cost": 50 },
@@ -29,7 +30,9 @@
     "كفر الشيخ",
     "دمياط"
   ],
-  "productsPerPage": 5,
-  "lowStockThreshold": 5,
-  "storageVersion": "v26"
+  "defaultMinPrice": 1,
+  "defaultMaxPrice": 20000,
+  "productsPerPage": 20,
+  "lowStockThreshold": 50,
+  "storageVersion": "v27"
 }

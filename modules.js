@@ -211,54 +211,98 @@ getWishlistDropdownHtml() {
             }
             return clone;
         },
-        getVariantsHtml(product, isCard = false, selectedOptions = {}, cartId = null) {
-            const container = document.createElement('div');
-            const { variants } = product;
-            if (!variants) return '';
-        
-            const idPrefix = cartId ? cartId : product.id;
 
-            if (variants['اللون']) {
-                const key = 'اللون';
-                const name = `option-${idPrefix}-${key}`;
-                const optionsHtml = product.variants[key].map((option, index) => {
+        // استبدل الدالة الحالية بالكامل بهذه النسخة التي ترتب الخواص
+getVariantsHtml(product, isCard = false, selectedOptions = {}, cartId = null) {
+    const { variants } = product;
+    if (!variants) return '';
+
+    const idPrefix = cartId ? cartId : product.id;
+    let variantsHtml = '';
+
+    // ✅ START: تحديد الترتيب المطلوب للخواص
+    const variantOrder = ['اللون', 'المقاس', 'الطول', 'موديل الهاتف'];
+    
+    // الحصول على خواص المنتج المتاحة وإعادة ترتيبها بناءً على القائمة أعلاه
+    const sortedVariantKeys = Object.keys(variants).sort((a, b) => {
+        const indexA = variantOrder.indexOf(a);
+        const indexB = variantOrder.indexOf(b);
+        
+        if (indexA === -1 && indexB === -1) return 0; // كلاهما غير موجود في قائمة الترتيب
+        if (indexA === -1) return 1;  // B فقط موجود، إذن B يأتي أولاً
+        if (indexB === -1) return -1; // A فقط موجود، إذن A يأتي أولاً
+        
+        return indexA - indexB; // كلاهما موجود، رتب حسب موقعهما في القائمة
+    });
+    // ✅ END: انتهى منطق الترتيب
+
+    // ✅ تم تغيير الحلقة التكرارية لتستخدم الخواص المرتبة
+    sortedVariantKeys.forEach(key => {
+        if (Object.hasOwnProperty.call(variants, key)) {
+            const options = variants[key];
+            const name = `option-${idPrefix}-${key}`;
+            let optionsHtml = '';
+            let finalHtmlWrapper = '';
+
+            // الحالة 1: خاصية اللون
+            if (key === 'اللون') {
+                optionsHtml = options.map((option, index) => {
                     const value = typeof option === 'object' ? option.value : option;
                     const nameAttr = typeof option === 'object' ? option.name || value : value;
                     const style = `background-color:${value}`;
+                    let isChecked = (selectedOptions && selectedOptions[key] === value) || (!selectedOptions[key] && index === 0);
                     
-                    let isChecked = false;
-                    if (selectedOptions && selectedOptions[key]) {
-                        isChecked = selectedOptions[key] === value;
-                    } else if (index === 0) {
-                        isChecked = true;
-                    }
+                    return `
+                        <label class="product-option-label cursor-pointer">
+                            <input type="radio" name="${name}" value="${value}" class="sr-only product-variant-selector" ${isChecked ? 'checked' : ''} data-product-id="${product.id}" data-variant-key="${key}">
+                            <span class="product-option-value color-swatch shadow-sm ${isCard ? '!w-6 !h-6' : 'w-8 h-8'} relative block rounded-full border-2 border-transparent" style="${style}" title="${nameAttr}"></span>
+                        </label>`;
+                }).join('');
+
+                const labelHtml = isCard ? '' : `<label class="font-semibold text-sm w-24">${key} :</label>`;
+                finalHtmlWrapper = `<div class="flex items-center gap-4 mt-2">${labelHtml}<div class="flex flex-wrap items-center gap-2">${optionsHtml}</div></div>`;
+            
+            // الحالة 2: خاصية موديل الهاتف
+            } else if (key === 'موديل الهاتف') {
+                optionsHtml = options.map(opt => `<option value="${opt.value}" ${selectedOptions[key] === opt.value ? 'selected' : ''}>${opt.value}</option>`).join('');
+                
+                const selectClasses = "variant-model-select product-variant-selector";
+                const selectHtml = `<select name="${name}" class="${selectClasses}" data-variant-key="${key}">${optionsHtml}</select>`;
+                
+                const labelHtml = isCard ? '' : `<label class="font-semibold text-sm w-24">${key} :</label>`;
+                const selectContainerClass = isCard ? '' : 'flex-grow min-w-0';
+
+                finalHtmlWrapper = `
+                    <div class="flex items-center gap-4 mt-2">
+                        ${labelHtml}
+                        <div class="${selectContainerClass}">
+                            ${selectHtml}
+                        </div>
+                    </div>`;
+
+            // الحالة 3: أي خاصية نصية أخرى
+            } else {
+                optionsHtml = options.map((option, index) => {
+                    const value = typeof option === 'object' ? option.value : option;
+                    let isChecked = (selectedOptions && selectedOptions[key] === value) || (!selectedOptions[key] && index === 0);
 
                     return `
                         <label class="product-option-label cursor-pointer">
                             <input type="radio" name="${name}" value="${value}" class="sr-only product-variant-selector" ${isChecked ? 'checked' : ''} data-product-id="${product.id}" data-variant-key="${key}">
-                            <span class="product-option-value color-swatch ${isCard ? '!w-6 !h-6' : 'w-8 h-8'} relative block rounded-full border-2 border-transparent" style="${style}" title="${nameAttr}"></span>
+                            <span class="product-option-value-text">${value}</span>
                         </label>`;
                 }).join('');
                 
-                const labelHtml = isCard ? '' : `<label class="font-semibold text-sm w-24">${key}:</label>`;
-                container.innerHTML += `<div class="flex items-center gap-4">${labelHtml}<div class="flex flex-wrap items-center gap-2">${optionsHtml}</div></div>`;
+                const labelHtml = isCard ? '' : `<label class="font-semibold text-sm w-24">${key} :</label>`;
+                finalHtmlWrapper = `<div class="flex items-center gap-4 mt-2">${labelHtml}<div class="flex flex-wrap items-center gap-2">${optionsHtml}</div></div>`;
             }
-        
-            if (variants['موديل الهاتف']) {
-                const key = 'موديل الهاتف';
-                const name = `option-${idPrefix}-${key}`;
-                const optionsHtml = variants[key].map(opt => `<option value="${opt.value}" ${selectedOptions[key] === opt.value ? 'selected' : ''}>${opt.value}</option>`).join('');
-                const selectHtml = `<select name="${name}" class="form-select searchable-select text-sm flex-1 product-variant-selector" data-variant-key="${key}">${optionsHtml}</select>`;
-                
-                if(isCard) {
-                     container.innerHTML += `<div class="flex-grow min-w-[120px] mt-2">${selectHtml}</div>`;
-                } else {
-                     container.innerHTML += `<div class="mt-4">${selectHtml}</div>`;
-                }
-            }
-            
-            return container.innerHTML;
-        },
+
+            variantsHtml += finalHtmlWrapper;
+        }
+    });
+    
+    return variantsHtml;
+},
         getBundleVariantsForCartHtml(bundle, cartId, selectedOptions = {}) {
             const container = document.createElement('div');
             container.className = 'space-y-2 mt-2';
@@ -320,19 +364,68 @@ getWishlistDropdownHtml() {
             }
             return wrapper;
         },
-        getSingleProductPageHtmlString(product) {
-            const { currency } = ScarStore.state.storeData.config;
-            const thumbnailsHtml = product.images.map((img, index) => `<div class="p-1 rounded-lg cursor-pointer ${index === 0 ? 'ring-2 ring-indigo-500' : ''} border product-thumbnail-item" data-image-index="${index}"><img src="${img}" alt="Thumbnail ${index + 1}" class="w-full h-full object-cover rounded-md pointer-events-none" onerror="this.onerror=null;this.src='https://placehold.co/100x100/e2e8f0/475569?text=SCAR';"></div>`).join('');
-            let stockHtml;
-            if (product.stock <= 0) {
-                stockHtml = `<div class="stock-indicator out-of-stock inline-block">نفدت الكمية</div>`;
-            } else if (product.stock <= ScarStore.state.storeData.config.lowStockThreshold) {
-                stockHtml = `<div class="stock-indicator low-stock inline-block">⏳ متبقي ${product.stock} قطع فقط</div>`;
-            } else {
-                stockHtml = `<div class="stock-indicator bg-green-100 text-green-800 inline-block">متوفر (${product.stock} قطعة)</div>`;
-            }
-            return `<div><div class="mb-6"><button id="back-btn" class="flex items-center gap-2 text-slate-600 font-semibold hover:text-indigo-600 transition-colors"><i data-lucide="arrow-right"></i><span>العودة للخلف</span></button></div><div class="bg-white p-6 md:p-8 rounded-xl shadow-sm mb-8"><div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12"><div class="space-y-4"><div class="relative group"><img src="${product.images[0]}" alt="${product.name}" class="main-product-img w-full rounded-lg object-cover aspect-square border cursor-pointer" data-action="open-lightbox" onerror="this.onerror=null;this.src='https://placehold.co/600x600/e2e8f0/475569?text=SCAR';"><div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none"><i data-lucide="zoom-in" class="w-16 h-16 text-white"></i></div></div><div class="grid grid-cols-5 gap-2">${thumbnailsHtml}</div></div><div class="space-y-6 flex flex-col"><div class="space-y-2"><div class="flex justify-between items-start"><h1 class="text-3xl md:text-4xl font-extrabold text-slate-800">${product.name}</h1><div class="flex items-center gap-2"><button class="love-btn p-2 bg-slate-100 rounded-full" data-id="${product.id}" aria-label="إضافة إلى المفضلة"><i data-lucide="heart" class="w-7 h-7 icon-heart pointer-events-none"></i></button><button id="share-product-btn" class="p-2 bg-slate-100 rounded-full" data-id="${product.id}" data-name="${product.name}" aria-label="مشاركة المنتج"><i data-lucide="share-2" class="w-7 h-7 text-slate-600 pointer-events-none"></i></button></div></div><div class="flex items-center gap-4 text-sm text-slate-500 flex-wrap"><span>ID: <span class="font-semibold text-slate-700">${product.id}</span></span><span class="w-px h-4 bg-slate-300"></span><span>الماركة: <span class="font-semibold text-slate-700">${product.brand}</span></span><span class="w-px h-4 bg-slate-300"></span><span>الضمان: <span class="font-semibold text-slate-700">${product.warranty || 'لا يوجد'}</span></span><span class="w-px h-4 bg-slate-300"></span><span>بلد الصنع: <span class="font-semibold text-slate-700">${product.countryOfOrigin}</span></span></div></div><div class="price-container flex items-baseline gap-3"><p class="product-price text-4xl font-extrabold text-indigo-600">${product.basePrice} ${currency}</p><p class="product-old-price text-xl text-slate-500 line-through ${product.oldPrice ? '' : 'hidden'}">${product.oldPrice} ${currency}</p></div><p class="text-slate-600 leading-relaxed flex-grow">${product.description}</p><div class="border-t pt-6 space-y-4"><div class="flex items-center gap-4">${stockHtml}</div><div class="variants-container"></div><div class="action-button-container" data-product-id="${product.id}"></div></div></div></div></div></div>`;
-        },
+        
+        // استبدل الدالة الحالية بالكامل بهذه النسخة المحسّنة
+getSingleProductPageHtmlString(product) {
+    const { currency } = ScarStore.state.storeData.config;
+    
+    const imageSources = (product.media || product.images.map(src => ({type: 'image', src})))
+        .filter(item => item.type === 'image');
+    const mainImageSrc = imageSources.length > 0 ? imageSources[0].src : 'https://placehold.co/600x600/e2e8f0/475569?text=SCAR';
+    
+    // ✅ تم تحسين طريقة عرض الصور المصغرة
+    const thumbnailsHtml = imageSources.map((img, index) => `
+        <div class="p-1 rounded-lg cursor-pointer ${index === 0 ? 'ring-2 ring-indigo-500' : ''} border bg-white product-thumbnail-item" data-image-index="${index}">
+            <img src="${img.src}" alt="Thumbnail ${index + 1}" class="w-full h-full object-contain rounded-md pointer-events-none">
+        </div>
+    `).join('');
+    
+    let stockHtml;
+    if (product.stock <= 0) {
+        stockHtml = `<div class="stock-indicator out-of-stock inline-block">نفدت الكمية</div>`;
+    } else if (product.stock <= ScarStore.state.storeData.config.lowStockThreshold) {
+        stockHtml = `<div class="stock-indicator low-stock inline-block">⏳ متبقي ${product.stock} قطع فقط</div>`;
+    } else {
+        stockHtml = `<div class="stock-indicator bg-green-100 text-green-800 inline-block">متوفر (${product.stock} قطعة)</div>`;
+    }
+    
+    let originalStatusHtml = '';
+    if (product.isOriginal !== undefined) {
+        originalStatusHtml = `
+            <span class="w-px h-4 bg-slate-300"></span>
+            <span class="flex items-center gap-1.5">
+                <i data-lucide="${product.isOriginal ? 'badge-check' : 'copy'}" class="w-4 h-4 ${product.isOriginal ? 'text-green-600' : 'text-amber-600'}"></i>
+                <span class="font-semibold ${product.isOriginal ? 'text-green-600' : 'text-amber-600'}">
+                    ${product.isOriginal ? 'أصلي' : 'جودة عالية (كوبي)'}
+                </span>
+            </span>
+        `;
+    }
+    
+    return `<div><div class="mb-6"><button id="back-btn" class="flex items-center gap-2 text-slate-600 font-semibold hover:text-indigo-600 transition-colors"><i data-lucide="arrow-right"></i><span>العودة للخلف</span></button></div><div class="bg-white p-6 md:p-8 rounded-xl shadow-sm mb-8"><div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12"><div class="space-y-4">
+    
+    <div class="relative group aspect-square bg-slate-50 rounded-lg flex items-center justify-center">
+        <img src="${mainImageSrc}" alt="${product.name}" class="main-product-img max-w-full max-h-full object-contain cursor-pointer" data-action="open-lightbox" onerror="this.onerror=null;this.src='https://placehold.co/600x600/e2e8f0/475569?text=SCAR';">
+        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none rounded-lg">
+            <i data-lucide="zoom-in" class="w-16 h-16 text-white"></i>
+        </div>
+    </div>
+    <div class="grid grid-cols-5 gap-2">${thumbnailsHtml}</div></div><div class="space-y-6 flex flex-col"><div class="space-y-2"><div class="flex justify-between items-start"><h1 class="text-3xl md:text-4xl font-extrabold text-slate-800">${product.name}</h1><div class="flex items-center gap-2"><button class="love-btn p-2 bg-slate-100 rounded-full" data-id="${product.id}" aria-label="إضافة إلى المفضلة"><i data-lucide="heart" class="w-7 h-7 icon-heart pointer-events-none"></i></button><button id="share-product-btn" class="p-2 bg-slate-100 rounded-full" data-id="${product.id}" data-name="${product.name}" aria-label="مشاركة المنتج"><i data-lucide="share-2" class="w-7 h-7 text-slate-600 pointer-events-none"></i></button></div></div>
+    
+    <div class="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
+        <span>ID: <span class="font-semibold text-slate-700">${product.id}</span></span>
+        <span class="w-px h-4 bg-slate-300"></span>
+        <span>الماركة: <span class="font-semibold text-slate-700">${product.brand}</span></span>
+        <span class="w-px h-4 bg-slate-300"></span>
+        <span>الضمان: <span class="font-semibold text-slate-700">${product.warranty || 'لا يوجد'}</span></span>
+        <span class="w-px h-4 bg-slate-300"></span>
+        <span>بلد الصنع: <span class="font-semibold text-slate-700">${product.countryOfOrigin}</span></span>
+        ${originalStatusHtml}
+    </div>
+
+    </div><div class="price-container flex items-baseline gap-3"><p class="product-price text-4xl font-extrabold text-indigo-600">${product.basePrice} ${currency}</p><p class="product-old-price text-xl text-slate-500 line-through ${product.oldPrice ? '' : 'hidden'}">${product.oldPrice} ${currency}</p></div><p class="text-slate-600 leading-relaxed flex-grow">${product.description}</p><div class="border-t pt-6 space-y-4"><div class="flex items-center gap-4">${stockHtml}</div><div class="variants-container"></div><div class="action-button-container" data-product-id="${product.id}"></div></div></div></div></div></div>`;
+},
+
         getBundlePageHtmlString(bundle) {
              const { currency } = ScarStore.state.storeData.config;
              let allMedia = (bundle.images && bundle.images.length > 0) ? bundle.images.map(src => ({ type: 'image', src })) : [];
@@ -516,19 +609,17 @@ getCheckoutModalHtml() {
         getNameModalHtml() {
              return `<div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-sm"><div class="p-6 text-center"><h2 class="text-2xl font-bold mb-2">اسمك الكريم؟</h2><p class="text-slate-500 mb-4">نريد معرفة اسمك لتحسين تجربتك وتسهيل عملية الطلب لاحقًا.</p><form id="name-form"><input type="text" id="user-name-input" class="form-input text-center" placeholder="الاسم الكامل" required><button type="submit" class="primary-btn w-full mt-4">حفظ الاسم</button></form></div></div>`;
         },
-
+// استبدل الدالة الحالية بهذه النسخة المحسّنة
 getComplaintModalHtml() {
-    // قراءة اسم المستخدم المحفوظ من الحالة العامة للمتجر
     const { name } = ScarStore.state.userInfo;
-    
     return `
         <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div class="p-5 border-b flex justify-between items-center">
+            <div class="modal-header p-5 border-b flex justify-between items-center">
                 <h2 class="text-2xl font-bold">الشكاوي والملاحظات</h2>
                 <button class="close-modal-btn"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
-            <div class="p-6">
-                <form id="complaint-form">
+            <form id="complaint-form">
+                <div class="modal-body p-6">
                     <div class="space-y-4">
                         <div>
                             <label for="complaint-name" class="block text-sm font-medium text-slate-700 mb-1">الاسم</label>
@@ -542,17 +633,18 @@ getComplaintModalHtml() {
                             <label for="complaint-message" class="block text-sm font-medium text-slate-700 mb-1">الرسالة</label>
                             <textarea id="complaint-message" name="message" class="form-textarea" rows="4" required placeholder="اكتب شكواك أو ملاحظتك هنا..."></textarea>
                         </div>
-                        <button type="submit" class="primary-btn w-full interactive-btn flex items-center justify-center gap-2 !py-2.5">
-                            <span class="button-text">إرسال</span>
-                            <div class="spinner hidden"></div>
-                        </button>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer p-5 border-t bg-slate-100">
+                    <button type="submit" class="primary-btn w-full interactive-btn flex items-center justify-center gap-2 !py-2.5">
+                        <span class="button-text">إرسال</span>
+                        <div class="spinner hidden"></div>
+                    </button>
+                </div>
+            </form>
         </div>
     `;
 },
-        
         getMobilePageHtml(type) {
             const isCart = type === 'cart';
             const sourceTemplateHtml = isCart ? this.getCartDropdownHtml() : this.getWishlistDropdownHtml();
@@ -705,138 +797,144 @@ getOrderStatusModalHtml(statusData) {
 },
     },
 
-    Cart: {
-        generateCartItemId(productId, options) {
-            if (!options || Object.keys(options).length === 0) return productId;
-            const sortedOptions = Object.keys(options).sort().map(key => `${key}-${options[key]}`).join('_');
-            return `${productId}_${sortedOptions}`;
-        },
-        add(productId, quantity, options) {
-            const product = ScarStore.state.productMap.get(productId);
-            if (!product) return;
-            
-            const cartItemId = this.generateCartItemId(productId, options);
-            let cartItem = ScarStore.state.cart.find(item => item.cartId === cartItemId);
-            
-            if (cartItem) {
-                cartItem.quantity = Math.min(product.stock, cartItem.quantity + quantity);
-            } else {
-                ScarStore.state.cart.push({ 
-                    cartId: cartItemId, 
-                    id: productId, 
-                    quantity: quantity, 
-                    options,
-                    price: ScarStore.StoreLogic.calculateCurrentPrice(product, options)
-                });
+   // استبدل كائن Cart بالكامل بهذا الكود
+Cart: {
+    generateCartItemId(productId, options) {
+        if (!options || Object.keys(options).length === 0) return productId;
+        const sortedOptions = Object.keys(options).sort().map(key => {
+            // التعامل مع خواص الموديلات بشكل خاص لأنها كائن
+            if (key === 'موديل الهاتف' && typeof options[key] === 'object') {
+                return `${key}-` + Object.entries(options[key]).map(([model, qty]) => `${model}:${qty}`).join(',');
             }
-            
-            this.save();
-            this.updateUI();
-            ScarStore.UI.syncProductCardViews(productId);
-            ScarStore.Toast.show('تمت الإضافة إلى السلة بنجاح!', 'success');
-        },
-        updateQuantity(cartItemId, quantityChange) {
-            const itemIndex = ScarStore.state.cart.findIndex(item => item.cartId === cartItemId);
-            if (itemIndex === -1) return;
-
-            const cartItem = ScarStore.state.cart[itemIndex];
-            const product = ScarStore.state.productMap.get(cartItem.id);
-            if (!product) return;
-
-            const newQuantity = cartItem.quantity + quantityChange;
-            if (newQuantity < 1) {
-                this.remove(cartItemId);
-            } else {
-                cartItem.quantity = Math.min(newQuantity, product.stock);
-                this.save();
-                this.updateUI();
-                ScarStore.UI.syncProductCardViews(product.id);
-            }
-        },
-        changeVariant(cartItemId, productId, variantKey, newVariantValue) {
-            const itemIndex = ScarStore.state.cart.findIndex(item => item.cartId === cartItemId);
-            if (itemIndex === -1) return;
-
-            const currentItem = ScarStore.state.cart[itemIndex];
-            const product = ScarStore.state.productMap.get(productId);
-
-            const newOptions = { ...currentItem.options, [variantKey]: newVariantValue };
-            const newCartId = this.generateCartItemId(productId, newOptions);
-
-            const existingDuplicateIndex = ScarStore.state.cart.findIndex(item => item.cartId === newCartId);
-
-            if (existingDuplicateIndex > -1 && existingDuplicateIndex !== itemIndex) {
-                ScarStore.state.cart[existingDuplicateIndex].quantity += currentItem.quantity;
-                ScarStore.state.cart.splice(itemIndex, 1);
-                ScarStore.Toast.show('تم دمج الكمية مع المنتج الموجود مسبقاً في السلة', 'info');
-            } else {
-                currentItem.options = newOptions;
-                currentItem.cartId = newCartId;
-                currentItem.price = ScarStore.StoreLogic.calculateCurrentPrice(product, newOptions);
-            }
-
-            this.save();
-            this.updateUI();
-            ScarStore.UI.syncProductCardViews(productId);
-        },
-        remove(cartItemId) {
-            let productId = null;
-            ScarStore.state.cart = ScarStore.state.cart.filter(item => {
-                if (item.cartId === cartItemId) {
-                    productId = item.id;
-                    return false;
-                }
-                return true;
+            return `${key}-${options[key]}`;
+        }).join('_');
+        return `${productId}_${sortedOptions}`;
+    },
+    add(productId, quantity, options) {
+        const product = ScarStore.state.productMap.get(productId);
+        if (!product) return;
+        
+        const cartItemId = this.generateCartItemId(productId, options);
+        let cartItem = ScarStore.state.cart.find(item => item.cartId === cartItemId);
+        
+        if (cartItem) {
+            cartItem.quantity = Math.min(product.stock, cartItem.quantity + quantity);
+        } else {
+            ScarStore.state.cart.push({ 
+                cartId: cartItemId, 
+                id: productId, 
+                quantity: quantity, 
+                options,
+                price: ScarStore.StoreLogic.calculateCurrentPrice(product, options)
             });
-            this.save();
-            this.updateUI();
-            if (productId) ScarStore.UI.syncProductCardViews(productId);
-            ScarStore.Toast.show('تمت إزالة المنتج من السلة', 'danger');
-        },
-        clear() {
-            const productIdsInCart = [...new Set(ScarStore.state.cart.map(item => item.id))];
-            ScarStore.state.cart = [];
-            this.save();
-            this.updateUI();
-            productIdsInCart.forEach(id => ScarStore.UI.syncProductCardViews(id));
-        },
-        save() {
-             localStorage.setItem(`scarCart_${ScarStore.state.storeData.config.storageVersion}`, JSON.stringify(ScarStore.state.cart));
-        },
-        updateUI() {
-            this.updateCountAndTotal();
-            this.updateDropdownUI();
-            ScarStore.Modals.updateMobilePage('cart');
-        },
-        updateCountAndTotal() {
-            const { cartButton, mobileCartButton, cartTotalPrice } = ScarStore.DOMElements;
-            const count = ScarStore.state.cart.reduce((sum, item) => sum + item.quantity, 0);
-            const total = ScarStore.state.cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-            
-            const countEl = cartButton.querySelector('#cart-count');
-            countEl.textContent = count;
-            countEl.classList.toggle('hidden', count === 0);
+        }
+        
+        this.save();
+        this.updateUI();
+        ScarStore.UI.syncProductCardViews(productId);
+        ScarStore.Toast.show('تمت الإضافة إلى السلة بنجاح!', 'success');
+    },
+    updateQuantity(cartItemId, quantityChange) {
+        const itemIndex = ScarStore.state.cart.findIndex(item => item.cartId === cartItemId);
+        if (itemIndex === -1) return;
 
-            const mobileCountEl = mobileCartButton.querySelector('#mobile-cart-count');
-            if(mobileCountEl) {
-                mobileCountEl.textContent = count;
-                mobileCountEl.classList.toggle('hidden', count === 0);
-            }
-            
-            cartTotalPrice.textContent = `${total.toFixed(2)} ${ScarStore.state.storeData.config.currency}`;
-            cartTotalPrice.classList.toggle('hidden', total === 0);
-        },
-        updateDropdownUI() {
-            const dropdown = document.getElementById('cart-dropdown');
-            if (dropdown) {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = ScarStore.Templates.getCartDropdownHtml();
-                dropdown.innerHTML = tempDiv.firstElementChild.innerHTML;
-                lucide.createIcons();
-            }
+        const cartItem = ScarStore.state.cart[itemIndex];
+        const product = ScarStore.state.productMap.get(cartItem.id);
+        if (!product) return;
+
+        const newQuantity = cartItem.quantity + quantityChange;
+        if (newQuantity < 1) {
+            this.remove(cartItemId);
+        } else {
+            cartItem.quantity = Math.min(newQuantity, product.stock);
+            this.save();
+            this.updateUI();
+            ScarStore.UI.syncProductCardViews(product.id);
         }
     },
-    
+    changeVariant(cartItemId, productId, variantKey, newVariantValue) {
+        const itemIndex = ScarStore.state.cart.findIndex(item => item.cartId === cartItemId);
+        if (itemIndex === -1) return;
+
+        const currentItem = ScarStore.state.cart[itemIndex];
+        const product = ScarStore.state.productMap.get(productId);
+
+        const newOptions = { ...currentItem.options, [variantKey]: newVariantValue };
+        const newCartId = this.generateCartItemId(productId, newOptions);
+
+        const existingDuplicateIndex = ScarStore.state.cart.findIndex(item => item.cartId === newCartId);
+
+        if (existingDuplicateIndex > -1 && existingDuplicateIndex !== itemIndex) {
+            ScarStore.state.cart[existingDuplicateIndex].quantity += currentItem.quantity;
+            ScarStore.state.cart.splice(itemIndex, 1);
+            ScarStore.Toast.show('تم دمج الكمية مع المنتج الموجود مسبقاً في السلة', 'info');
+        } else {
+            currentItem.options = newOptions;
+            currentItem.cartId = newCartId;
+            currentItem.price = ScarStore.StoreLogic.calculateCurrentPrice(product, newOptions);
+        }
+
+        this.save();
+        this.updateUI();
+        ScarStore.UI.syncProductCardViews(productId);
+    },
+    remove(cartItemId) {
+        let productId = null;
+        ScarStore.state.cart = ScarStore.state.cart.filter(item => {
+            if (item.cartId === cartItemId) {
+                productId = item.id;
+                return false;
+            }
+            return true;
+        });
+        this.save();
+        this.updateUI();
+        if (productId) ScarStore.UI.syncProductCardViews(productId);
+        ScarStore.Toast.show('تمت إزالة المنتج من السلة', 'danger');
+    },
+    clear() {
+        const productIdsInCart = [...new Set(ScarStore.state.cart.map(item => item.id))];
+        ScarStore.state.cart = [];
+        this.save();
+        this.updateUI();
+        productIdsInCart.forEach(id => ScarStore.UI.syncProductCardViews(id));
+    },
+    save() {
+         localStorage.setItem(`scarCart_${ScarStore.state.storeData.config.storageVersion}`, JSON.stringify(ScarStore.state.cart));
+    },
+    updateUI() {
+        this.updateCountAndTotal();
+        this.updateDropdownUI();
+        ScarStore.Modals.updateMobilePage('cart');
+    },
+    updateCountAndTotal() {
+        const { cartButton, mobileCartButton, cartTotalPrice } = ScarStore.DOMElements;
+        const count = ScarStore.state.cart.reduce((sum, item) => sum + item.quantity, 0);
+        const total = ScarStore.state.cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        
+        const countEl = cartButton.querySelector('#cart-count');
+        countEl.textContent = count;
+        countEl.classList.toggle('hidden', count === 0);
+
+        const mobileCountEl = mobileCartButton.querySelector('#mobile-cart-count');
+        if(mobileCountEl) {
+            mobileCountEl.textContent = count;
+            mobileCountEl.classList.toggle('hidden', count === 0);
+        }
+        
+        cartTotalPrice.textContent = `${total.toFixed(2)} ${ScarStore.state.storeData.config.currency}`;
+        cartTotalPrice.classList.toggle('hidden', total === 0);
+    },
+    updateDropdownUI() {
+        const dropdown = document.getElementById('cart-dropdown');
+        if (dropdown) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = ScarStore.Templates.getCartDropdownHtml();
+            dropdown.innerHTML = tempDiv.firstElementChild.innerHTML;
+            lucide.createIcons();
+        }
+    }
+},
     Wishlist: {
         toggle(productId, callback) {
     const index = ScarStore.state.wishlist.indexOf(productId);
@@ -941,6 +1039,44 @@ replaceContent(newContentHtml) {
             }
         }
     });
+},
+// أضف هذه الدالة الجديدة داخل كائن Modals
+showComplaintModal() {
+    const modalHtml = ScarStore.Templates.getComplaintModalHtml();
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = modalHtml;
+
+    // إذا كانت الشاشة صغيرة (هاتف)، اعرضها بملء الشاشة
+    if (window.innerWidth <= 767) {
+        const title = tempDiv.querySelector('.modal-header h2').innerHTML;
+        const body = tempDiv.querySelector('.modal-body').innerHTML;
+        const footer = tempDiv.querySelector('.modal-footer').innerHTML;
+        
+        // نستخدم نفس نظام عرض السلة والمفضلة
+        const mobilePageHtml = `
+            <div id="complaint-mobile-modal" class="modal-content mobile-modal-page">
+                <header class="mobile-modal-header p-4">
+                    <div class="flex-grow"><h2 class="text-2xl font-bold">${title}</h2></div>
+                    <button class="close-modal-btn"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </header>
+                <div class="mobile-modal-body custom-scrollbar p-6">
+                    ${body}
+                </div>
+                <footer class="mobile-modal-footer p-5 border-t bg-slate-100">
+                    ${footer}
+                </footer>
+            </div>
+        `;
+        this.show(mobilePageHtml);
+    } 
+    // إذا كانت الشاشة كبيرة، اعرضها كنافذة منبثقة عادية
+    else {
+        this.show(modalHtml);
+    }
+    
+    // في كلتا الحالتين، قم بتهيئة حقل الهاتف والأيقونات
+    this.initIntlTelInput('#complaint-phone');
+    lucide.createIcons();
 },
         show(contentHtml, closeOnOverlayClick = true) {
             const overlay = document.getElementById('the-one-overlay');
