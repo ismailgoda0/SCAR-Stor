@@ -1,5 +1,6 @@
-
-/* ===== 1. Design System & Variables ===== */
+/*
+// FILE: style.js
+ ===== 1. Design System & Variables ===== */
 :root {
     --bg-primary: #f8fafc; /* Main background */
     --bg-secondary: #ffffff; /* Cards, Modals */
@@ -200,8 +201,7 @@ main {
 .form-textarea,
 .ts-control {
     width: 100%;
-        background-color: var(--bg-accent);
-
+    background-color: var(--bg-accent);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 0.75rem 1rem;
@@ -384,23 +384,23 @@ main {
 /* استبدل الكود القديم بهذا الكود الجديد في ملف style.css */
 
 .modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(15, 23, 42, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  padding: 1rem;
-  /* --- الخصائص الجديدة --- */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+    /* --- الخصائص الجديدة --- */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
 }
 
 .modal-overlay.is-visible {
-  opacity: 1;
-  visibility: visible;
+    opacity: 1;
+    visibility: visible;
 }
 #lightbox-overlay {
     position: fixed;
@@ -443,7 +443,7 @@ main {
     bottom: 1.25rem;
     left: 1.25rem;
     z-index: 9999 !important; /* ✅ رفع الطبقة لأعلى قيمة ممكنة */
-    display: flex !important;       /* ✅ فرض الظهور ومنع الإخفاء */
+    display: flex !important;     /* ✅ فرض الظهور ومنع الإخفاء */
     flex-direction: column;
     gap: 0.5rem;
     pointer-events: none; /* ✅ السماح بالنقر "من خلال" الحاوية الشفافة */
@@ -460,8 +460,7 @@ main {
     box-shadow: var(--shadow-lg);
     opacity: 0;
     transform: translateX(-120%);
-        pointer-events: auto;
-
+    pointer-events: auto;
 }
 
 .toast-success {
@@ -1165,10 +1164,8 @@ input[type=number] {
     padding-right:0;
     padding-left:0;
 }
-#show-cart-products-btn,
-#show-wishlist-products-btn {
-    display: none;
-}/* ===== 12. Success Modal Animation ===== */
+
+/* ===== 12. Success Modal Animation ===== */
 .success-animation .checkmark {
     width: 100px;
     height: 100px;
@@ -1222,35 +1219,29 @@ input[type=number] {
     .modal-content:has(#checkout-form),
     .modal-content:has(#complaint-form),
     .modal-overlay
-     {
+    {
         width: 100%;
         height: 100%;
         max-width: 100%;
         max-height: 100vh; /* vh تعني ارتفاع الشاشة */
         border-radius: 0;
-          padding: 0;
-          
-
+        padding: 0;
     }
     .categories-scroller {
-    padding: 0 0px;
+        padding: 0 0px;
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+        color: var(--accent-color);
+        background-color: white;
+        width: 44px;
+        height: 44px;
+        margin: 80px 80px;
+    }
 }
-
-.swiper-button-next,
-.swiper-button-prev {
-    color: var(--accent-color);
-    background-color: white;
-    width: 44px;
-    height: 44px;
-    margin: 80px 80px;
-}
-
-}
-
-
 
 /* START: تنسيقات أزرار الخواص النصية (الطول، المقاس، الخ) */
-
 .product-option-value-text {
     display: inline-block;
     padding: 0.25rem 0.75rem; /* 4px 12px */
@@ -1281,15 +1272,11 @@ input[type=number] {
 .color-swatch {
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
-
 /* END: تنسيقات أزرار الخواص النصية */
 
-
 .bg-slate-50{
-background-color: rgba(var(--bs-white-rgb),var(--bs-bg-opacity))!important
+    background-color: rgba(var(--bs-white-rgb),var(--bs-bg-opacity))!important
 }
-
-
 
 .ts-wrapper.variant-model-select .ts-control {
     background-color: var(--bg-accent);
@@ -1297,8 +1284,8 @@ background-color: rgba(var(--bs-white-rgb),var(--bs-bg-opacity))!important
     border-radius: var(--radius-md);
     transition: border-color 0.2s, box-shadow 0.2s;
     box-shadow: none;
-
 }
+
 .ts-wrapper.variant-model-select .ts-control {
     background-color: var(--bg-accent);
     border: 1px solid var(--border-color);
@@ -1315,31 +1302,24 @@ background-color: rgba(var(--bs-white-rgb),var(--bs-bg-opacity))!important
 /* START: Auto-Hide Header on Scroll Styles (Mobile Only) */
 #filter-bar {
     transition: transform 0.3s ease-in-out, top 0.3s ease-in-out;
-            
 }
 
+#filter-bar.is-hidden {
+    top: -120px !important; 
+}
 
-    #filter-bar.is-hidden {
-        top: -120px !important; 
-    }
 @media (max-width: 767px) {
-   
-#main-header{
-            /* transition: transform 0.4s cubic-bezier(0.0, 0.0, 0.0, 0.0); */
-
-}
+    #main-header{
+        /* transition: transform 0.4s cubic-bezier(0.0, 0.0, 0.0, 0.0); */
+    }
 
     #main-header.is-hidden {
         transform: translateY(-100%) !important;
     }
-
 }
-
 /* END: Auto-Hide Header on Scroll Styles */
 
-
 /* START: Custom Category Select Dropdown Styles */
-
 .category-select {
     /* الشكل العام */
     appearance: none; /* إزالة الشكل الافتراضي للمتصفح */
@@ -1381,4 +1361,376 @@ background-color: rgba(var(--bs-white-rgb),var(--bs-bg-opacity))!important
     color: var(--text-secondary);
 }
 
-/* END: Custom Category Select Dropdown Styles */
+
+/* START: Dynamic Form Field Animation */
+.dynamic-form-field {
+    transition: all 0.3s ease-in-out;
+    overflow: hidden;
+    max-height: 100px; /* يجب أن تكون القيمة أكبر من ارتفاع الحقل الفعلي */
+}
+
+.dynamic-form-field.hidden {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0 !important; /* لإزالة المسافة العلوية عند الإخفاء */
+    padding-top: 0;
+    padding-bottom: 0;
+}
+/* END: Dynamic Form Field Animation */
+
+/* START: Complaint & Feedback Modal Improvements */
+
+/* 1. إجبار النافذة على استخدام كامل ارتفاع الشاشة على الهواتف مع الحفاظ على الهيكل */
+.modal-content:has(#complaint-form) {
+    display: flex;
+    flex-direction: column;
+    /* على الشاشات الكبيرة، الحد الأقصى للارتفاع 90% من الشاشة */
+    max-height: 90vh; 
+    /* على الشاشات الصغيرة، تأخذ 100% من الارتفاع */
+    height: 100%; 
+}
+
+/* 2. جعل الرأس والتذييل ثابتين (لا يتم تمريرهم) */
+.modal-content .modal-header,
+.modal-content .modal-footer {
+    flex-shrink: 0;
+}
+
+/* 3. هذا هو الحل السحري: جعل "الجسم" يأخذ المساحة المتبقية ويضيف شريط تمرير عند الحاجة */
+.modal-content .modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* 4. إضافة خط فاصل أنيق قبل قسم "الطلبات السابقة" */
+.form-section {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* 5. تحسينات إضافية للراديو (نعم/لا) */
+.form-radio {
+    width: 1.25em;
+    height: 1.25em;
+    accent-color: var(--accent-color);
+}
+/* END: Complaint & Feedback Modal Improvements */
+
+
+
+/* START: Complaint & Feedback Modal Improvements */
+
+/* 1. إجبار النافذة على استخدام كامل ارتفاع الشاشة على الهواتف مع الحفاظ على الهيكل */
+.modal-content:has(#complaint-form) {
+    display: flex;
+    flex-direction: column;
+    /* على الشاشات الكبيرة، الحد الأقصى للارتفاع 90% من الشاشة */
+    max-height: 90vh; 
+    /* على الشاشات الصغيرة، تأخذ 100% من الارتفاع */
+    height: 100%; 
+}
+
+/* 2. جعل الرأس والتذييل ثابتين (لا يتم تمريرهم) */
+.modal-content .modal-header,
+.modal-content .modal-footer {
+    flex-shrink: 0;
+}
+
+/* 3. هذا هو الحل السحري: جعل "الجسم" يأخذ المساحة المتبقية ويضيف شريط تمرير عند الحاجة */
+.modal-content .modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+
+}
+
+/* 4. إضافة خط فاصل أنيق قبل قسم "الطلبات السابقة" */
+.form-section {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* 5. تحسينات إضافية للراديو (نعم/لا) */
+.form-radio {
+    width: 1.25em;
+    height: 1.25em;
+    accent-color: var(--accent-color);
+}
+
+/* ✅ التعديل هنا: تم زيادة الارتفاع الأقصى */
+.dynamic-form-field {
+    transition: all 0.3s ease-in-out;
+    overflow: hidden;
+    max-height: 250px; /* تم زيادة القيمة من 100px إلى 250px */
+}
+
+.dynamic-form-field.hidden {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0 !important; /* لإزالة المسافة العلوية عند الإخفاء */
+    padding-top: 0;
+    padding-bottom: 0;
+}
+/* END: Complaint & Feedback Modal Improvements */
+
+
+/* ===== بداية تنسيقات الخريطة المحسّنة ===== */
+#map-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: #e2e8f0;
+    border: 1px solid var(--border-color);
+}
+
+/* طبقة وهمية لتطبيق الخلفية والتأثير الضبابي */
+#map-container::before {
+    content: '';
+    position: absolute;
+    top: -5px; left: -5px; right: -5px; bottom: -5px; /* تكبير بسيط لتجنب الحواف الفارغة */
+    background-image: url("data:image/svg+xml,%3Csvg width='84' height='48' viewBox='0 0 84 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M78 48H84V42H78V48ZM66 48H72V42H66V48ZM60 48H54V42H60V48ZM48 48H42V42H48V48ZM36 48H30V42H36V48ZM24 48H18V42H24V48ZM12 48H6V42H12V48ZM0 48H6V42H0V48ZM78 36H84V30H78V36ZM60 36H66V30H60V36ZM48 36H54V30H48V36ZM30 36H36V30H30V36ZM12 36H18V30H12V36ZM0 36H6V30H0V36ZM78 24H84V18H78V24ZM66 24H72V18H66V24ZM60 24H54V18H60V24ZM48 24H42V18H48V24ZM30 24H36V18H30V24ZM24 24H18V18H24V24ZM0 24H6V18H0V24ZM78 12H84V6H78V12ZM60 12H66V6H60V12ZM48 12H54V6H48V12ZM30 12H36V6H30V12ZM12 12H18V6H12V12ZM0 12H6V6H0V12ZM78 0H84V6H78V0ZM66 0H72V6H66V0ZM48 0H54V6H48V0ZM24 0H30V6H24V0ZM0 0H6V6H0V0Z' fill='%239ca3af' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E");
+    filter: blur(2px); /* التأثير الضبابي */
+    z-index: 1;
+}
+
+/* غلاف المحتوى ليكون فوق الخلفية الضبابية */
+#map-container > div {
+    position: relative;
+    z-index: 2;
+}
+
+/* تحسينات الزر */
+#get-location-map-btn {
+    border: 3px solid white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* تنسيق كبسولة النتيجة الجديد */
+#location-result {
+    font-size: 0.875rem; /* text-sm, أكبر من السابق */
+    font-weight: 600;
+    color: #1e293b;
+    padding: 0.25rem 0.75rem;
+    background-color: rgba(255, 255, 255, 0.75); /* خلفية بيضاء شبه شفافة */
+    backdrop-filter: blur(4px); /* تأثير زجاجي جميل */
+    border-radius: 9999px; /* شكل كبسولة */
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+#location-result a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+#location-result a:hover {
+    text-decoration: underline;
+}
+/* ... في نهاية ملف style.css ... */
+
+.success-btn-custom {
+    background-color: var(--success-color) !important;
+    background-image: none !important;
+    color: white !important; /* ===== أضف هذا السطر ===== */
+}
+
+/* ===== بداية تنسيقات شعارات الدفع ===== */
+.payment-logo {
+    width: 45px;   /* عرض موحد للشعار */
+    height: 30px;  /* ارتفاع موحد للشعار */
+    object-fit: contain; /* يضمن ظهور الشعار كاملاً بدون تشويه */
+}
+/* ===== نهاية تنسيقات شعارات الدفع ===== */
+
+/* ===== بداية تنسيقات خيارات الدفع المحسّنة ===== */
+.payment-option {
+    transition: all 0.2s ease-in-out;
+}
+/* إضافة ظل وتأثير بسيط عند اختيار طريقة الدفع */
+.payment-option:has(:checked) {
+    box-shadow: 0 0 0 2px var(--accent-color), 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    transform: translateY(-2px);
+}
+
+/* حاوية الشعار للتحكم في الحجم والمحاذاة */
+.payment-logo-container {
+    width: 60px;
+    height: 40px;
+    margin-left: auto; /* لدفع الشعار إلى أقصى اليمين */
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* الشعار نفسه ليملأ الحاوية بشكل مناسب */
+.payment-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+/* ===== نهاية تنسيقات خيارات الدفع المحسّنة ===== */
+
+/* ===== بداية تنسيقات نظام الدفع المطور ===== */
+
+/* تحسين شكل شريط خيار الدفع */
+.payment-option {
+    gap: 12px; /* مسافة بين العناصر */
+}
+
+/* تنسيق شعار طريقة الدفع */
+.payment-logo {
+    width: 50px;       /* عرض الشعار */
+    height: 32px;      /* ارتفاع الشعار */
+    object-fit: contain; /* يضمن ظهور الشعار كاملاً */
+    margin-left: auto; /* يدفعه إلى أقصى اليمين */
+}
+
+/* تنسيق الشارة (Badge) مثل "موصى به" */
+.payment-badge {
+    position: absolute;
+    top: -10px;        /* لرفعه فوق الشريط */
+    right: -10px;      /* لوضعه في الزاوية */
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+/* تنسيق زر النسخ داخل التعليمات */
+.copy-btn {
+    margin-right: 8px; /* في العربية، نستخدم margin-right */
+    font-size: 11px;
+    padding: 2px 8px;
+    background-color: #e2e8f0;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.copy-btn:hover {
+    background-color: #cbd5e1;
+}
+
+/* تنسيق مؤقت الدفع */
+#wallet-timer {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+/* ===== نهاية تنسيقات نظام الدفع المطور ===== */
+
+
+/* ===== بداية تنسيقات بطاقات تفاصيل الطلب ===== */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr); /* عمود واحد على الشاشات الصغيرة */
+    gap: 0.75rem; /* 12px */
+}
+/* على الشاشات الأكبر، تتحول إلى عمودين */
+@media (min-width: 768px) {
+    .details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===== بداية الكود الموحد والمطور لنافذة تتبع الطلب (يعتمد على متغيرات :root) ===== */
+
+/* --- 1. الهيكل الرئيسي للنافذة --- */
+.modal-content:has(#order-status-body) {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-accent);
+    border-radius: var(--radius-lg);
+}
+#order-status-header {
+    flex-shrink: 0;
+}
+#order-status-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem 1.5rem;
+}
+
+
+/* --- 2. تصميم الرأس الديناميكي --- */
+.modal-header {
+    padding: 1rem 1.5rem;
+    color: white;
+    text-align: center;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transition: background 0.4s ease;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.modal-header h3 { font-size: 1.125rem; font-weight: 700; }
+.modal-header span { font-family: monospace; font-weight: bold; background: rgba(0,0,0,0.15); padding: 2px 8px; border-radius: var(--radius-sm);}
+/* (الألوان المتدرجة تبقى كما هي لأنها تصميم فريد للحالات) */
+.header-review { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+.header-processing { background: linear-gradient(135deg, #14b8a6, #2dd4bf); }
+.header-shipping { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+.header-delivered { background: linear-gradient(135deg, #16a34a, #22c55e); }
+.header-cancelled, .header-hold { background: linear-gradient(135deg, #64748b, #94a3b8); }
+
+/* --- 3. تصميم الخط الزمني (Stepper) --- */
+.status-stepper { display: flex; justify-content: space-between; position: relative; margin: 2rem 0; }
+.status-stepper .line { position: absolute; top: 22px; right: 10%; width: 80%; height: 4px; z-index: 0; }
+.status-stepper .line-bg { background-color: var(--border-color); width: 75%; }
+.status-stepper .line-progress { background: var(--accent-color); width: 0%; transition: width 0.6s ease-in-out; }
+.step-item { position: relative; text-align: center; flex: 1; z-index: 1; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; animation-delay: calc(var(--i) * 0.15s); }
+.step-circle { width: 45px; height: 45px; border-radius: 50%; background: var(--border-color); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; border: 4px solid var(--bg-accent); transition: all 0.4s ease; }
+.step-icon { width: 20px; height: 20px; }
+.step-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.step-item.completed .step-circle { background: var(--accent-color); color: white; }
+.step-item.active .step-circle { background: var(--accent-color); color: white; animation: pulse 1.8s infinite; }
+.step-item.active .step-label { color: var(--accent-color); }
+
+/* --- 4. تنسيقات خاصة (رسالة المدير، الحالات الخاصة) --- */
+.special-status-view { text-align: center; padding: 2rem 1rem; background-color: var(--bg-secondary); border-radius: var(--radius-lg); margin-top: 1rem; margin-bottom: 1.5rem; border: 1px solid var(--border-color); }
+.admin-message { padding: 0.75rem 1rem; margin: 1.5rem 0; background-color: #f0f9ff; border-right: 4px solid var(--accent-color); color: #0c4a6e; font-size: 1.2rem; border-radius: var(--radius-sm); }
+.admin-message strong { color: var(--accent-color); }
+
+/* --- 5. تنسيقات بطاقات التفاصيل (Cards) --- */
+.details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.detail-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1rem; box-shadow: var(--shadow-sm); transition: transform 0.3s, box-shadow 0.3s; }
+.detail-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+.detail-card__header { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-primary); padding-bottom: 0.75rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--bg-accent); }
+.detail-card__header i { color: var(--accent-color); width: 18px; height: 18px; }
+.detail-card__body { display: flex; flex-direction: column; gap: 1rem; font-size: 14px; }
+.detail-row { display: flex; align-items: center; gap: 0.75rem; }
+.detail-row .detail-label { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 13px; width: 110px; flex-shrink: 0; }
+.detail-row .detail-label i { width: 14px; height: 14px; color: #94a3b8; }
+.detail-row .detail-value { font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; flex-grow: 1; text-align: right; }
+.inline-copy-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; border-radius: var(--radius-sm); display: inline-flex; transition: all 0.2s; }
+.inline-copy-btn:hover { color: var(--accent-color); background-color: color-mix(in srgb, var(--accent-color) 10%, transparent); }
+.invoice-card .total { font-size: 16px; font-weight: bold; padding-top: 0.75rem; margin-top: 0.5rem; border-top: 1px solid var(--bg-accent); }
+.invoice-card .total strong { color: var(--accent-color); }
+
+/* --- 6. Animations --- */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+/* ===== نهاية الكود الموحد ===== */

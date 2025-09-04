@@ -1,82 +1,93 @@
 // FILE: events.js
 
-ScarStore.generateOrderId = function() {
-    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const timestamp = Date.now().toString().slice(-4);
-    return `SC-${timestamp}-${randomPart}`;
+ScarStore.generateUniqueOrderId = async function() {
+    const { config } = ScarStore.state.storeData;
+    let orderId;
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 10) {
+        const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const timestamp = Date.now().toString().slice(-4);
+        orderId = `SC-${timestamp}-${randomPart}`;
+        try {
+            const checkUrl = `${config.googleSheetWebAppUrl}?action=checkId&id=${orderId}&cacheBust=${new Date().getTime()}`;
+            const response = await fetch(checkUrl);
+            if (!response.ok) throw new Error("Network response was not ok");
+            const result = await response.json();
+            if (!result.exists) {
+                isUnique = true;
+            }
+        } catch (error) {
+            console.error("Error checking ID uniqueness, assuming it's unique to proceed:", error);
+            isUnique = true; 
+        }
+        attempts++;
+    }
+    return orderId;
 };
-
 
 Object.assign(ScarStore, {
     Events: {
-    setup() {
-    window.addEventListener('popstate', () => ScarStore.Router.handleRouteChange());
-    window.addEventListener('keyup', e => { if (e.key === "Escape") ScarStore.Modals.closeLast(); });
-    window.addEventListener('awesomplete-selectcomplete', e => ScarStore.Router.navigateTo(`?search=${encodeURIComponent(e.text.value)}`));
+        setup() {
+            window.addEventListener('popstate', () => ScarStore.Router.handleRouteChange());
+            window.addEventListener('keyup', e => { if (e.key === "Escape") ScarStore.Modals.closeLast(); });
+            window.addEventListener('awesomplete-selectcomplete', e => ScarStore.Router.navigateTo(`?search=${encodeURIComponent(e.text.value)}`));
 
-    // ربط دالة السكرول الذكية التي أضفناها مؤخرًا
-    window.addEventListener('scroll', this.handleSmartScroll.bind(this));
-    
-    // مستمع لتغيير حجم الشاشة (للتعامل مع شريط الفلاتر)
-    this.resizeTimeout = null;
-    window.addEventListener('resize', () => {
-        clearTimeout(this.resizeTimeout);
-        this.resizeTimeout = setTimeout(() => {
-            if (ScarStore.state.currentView === 'category') {
-                ScarStore.UI.handleFilterBarResponsiveness();
-            }
-        }, 150);
-    });
+            window.addEventListener('scroll', this.handleSmartScroll.bind(this));
+            
+            this.resizeTimeout = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(this.resizeTimeout);
+                this.resizeTimeout = setTimeout(() => {
+                    if (ScarStore.state.currentView === 'category') {
+                        ScarStore.UI.handleFilterBarResponsiveness();
+                    }
+                }, 150);
+            });
 
-    // ربط أحداث أزرار الواتساب
-    ScarStore.DOMElements.whatsappBtn.addEventListener('click', () => ScarStore.DOMElements.whatsappPopup.classList.toggle('hidden'));
-    ScarStore.DOMElements.closeWhatsappPopup.addEventListener('click', () => ScarStore.DOMElements.whatsappPopup.classList.add('hidden'));
-    ScarStore.DOMElements.sendWhatsappMessage.addEventListener('click', this.handleSendWhatsapp.bind(this));
+            ScarStore.DOMElements.whatsappBtn.addEventListener('click', () => ScarStore.DOMElements.whatsappPopup.classList.toggle('hidden'));
+            ScarStore.DOMElements.closeWhatsappPopup.addEventListener('click', () => ScarStore.DOMElements.whatsappPopup.classList.add('hidden'));
+            ScarStore.DOMElements.sendWhatsappMessage.addEventListener('click', this.handleSendWhatsapp.bind(this));
 
-    // ربط المستمعين الرئيسيين للصفحة (للنقرات، التغييرات، وإرسال النماذج)
-    document.body.addEventListener('click', this.handleBodyClick.bind(this));
-    document.body.addEventListener('change', this.handleBodyChange.bind(this));
-    document.body.addEventListener('submit', this.handleFormSubmit.bind(this));
+            document.body.addEventListener('click', this.handleBodyClick.bind(this));
+            document.body.addEventListener('change', this.handleBodyChange.bind(this));
+            document.body.addEventListener('submit', this.handleFormSubmit.bind(this));
 
-    // ربط مستمع الإدخال لمربع البحث العام
-    let globalSearchTimeout;
-    ScarStore.DOMElements.globalSearchInput.addEventListener('input', (e) => {
-        clearTimeout(globalSearchTimeout);
-        globalSearchTimeout = setTimeout(() => {
-            const searchTerm = e.target.value.trim();
-            ScarStore.Router.navigateTo(searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '/');
-        }, 400);
-    });
+            let globalSearchTimeout;
+            ScarStore.DOMElements.globalSearchInput.addEventListener('input', (e) => {
+                clearTimeout(globalSearchTimeout);
+                globalSearchTimeout = setTimeout(() => {
+                    const searchTerm = e.target.value.trim();
+                    ScarStore.Router.navigateTo(searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '/');
+                }, 400);
+            });
 
-    // ربط مستمع الإدخال لمربع البحث داخل الأقسام
-    document.body.addEventListener('input', e => {
-        if (e.target.id === 'local-search-input') {
-            clearTimeout(this.localSearchTimeout);
-            this.localSearchTimeout = setTimeout(() => {
-                ScarStore.state.currentSearchTerm = e.target.value.trim();
-                ScarStore.state.currentPage = 1;
-                if (ScarStore.state.currentView === 'list-page') {
-                    ScarStore.UI.renderListPage(new URLSearchParams(window.location.search).get('view'));
-                } else {
-                    ScarStore.Router.updateURLWithFilters();
-                    ScarStore.UI.renderProducts();
+            document.body.addEventListener('input', e => {
+                if (e.target.id === 'local-search-input') {
+                    clearTimeout(this.localSearchTimeout);
+                    this.localSearchTimeout = setTimeout(() => {
+                        ScarStore.state.currentSearchTerm = e.target.value.trim();
+                        ScarStore.state.currentPage = 1;
+                        if (ScarStore.state.currentView === 'list-page') {
+                            ScarStore.UI.renderListPage(new URLSearchParams(window.location.search).get('view'));
+                        } else {
+                            ScarStore.Router.updateURLWithFilters();
+                            ScarStore.UI.renderProducts();
+                        }
+                    }, 300);
                 }
-            }, 300);
-        }
-    });
-},
-    handleSmartScroll() {
+            });
+        },
+
+        handleSmartScroll() {
             const currentScrollY = window.scrollY;
             const header = document.getElementById('main-header');
             const filterBar = document.getElementById('filter-bar');
             
-            // إظهار وإخفاء الأزرار العائمة (مثل زر الصعود للأعلى)
             const isScrolled = currentScrollY > 300;
             if (ScarStore.DOMElements.backToTopBtn) ScarStore.DOMElements.backToTopBtn.classList.toggle('visible', isScrolled);
             if (ScarStore.DOMElements.whatsappWidget) ScarStore.DOMElements.whatsappWidget.classList.toggle('visible', isScrolled);
 
-            // منطق إخفاء الهيدر وشريط الفلاتر
-            // لا تقم بالإخفاء إذا كان المستخدم في أعلى الصفحة
             if (currentScrollY < 100) {
                 if (header) header.classList.remove('is-hidden');
                 if (filterBar) filterBar.classList.remove('is-hidden');
@@ -84,78 +95,152 @@ Object.assign(ScarStore, {
                 return;
             }
             
-            // إذا كان النزول لأسفل، قم بالإخفاء
             if (currentScrollY > this.lastScrollY) {
                 if (header) header.classList.add('is-hidden');
                 if (filterBar) filterBar.classList.add('is-hidden');
-            } 
-            // إذا كان الصعود لأعلى، قم بالإظهار
+            }
             else {
                 if (header) header.classList.remove('is-hidden');
                 if (filterBar) filterBar.classList.remove('is-hidden');
             }
 
-            // تحديث آخر موقع للسكرول
             this.lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY;
         },
-        async handleTrackOrder(form) {
-            const { config } = ScarStore.state.storeData;
-            const orderId = new FormData(form).get('orderId').trim().toUpperCase();
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const btnText = submitBtn.querySelector('.button-text');
-            const spinner = submitBtn.querySelector('.spinner');
 
-            if (!orderId) {
-                ScarStore.Toast.show('الرجاء إدخال معرّف الطلب', 'danger');
-                return;
+  // استبدل الدالة القديمة في ملف events.js بهذه النسخة الكاملة والنهائية
+async handleTrackOrder(form) {
+    const { config } = ScarStore.state.storeData;
+    const orderId = new FormData(form).get('orderId').trim().toUpperCase();
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.button-text');
+    const spinner = submitBtn.querySelector('.spinner');
+
+    if (!orderId) {
+        ScarStore.Toast.show('الرجاء إدخال معرّف الطلب', 'danger');
+        return;
+    }
+
+    // تفعيل حالة التحميل
+    btnText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    submitBtn.disabled = true;
+
+    try {
+        const requestUrl = `${config.googleSheetWebAppUrl}?action=search&id=${orderId}&cacheBust=${new Date().getTime()}`;
+        const response = await fetch(requestUrl);
+
+        if (!response.ok) {
+            throw new Error(`خطأ من الخادم: ${response.status} ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+
+        if (result.result === 'success' && result.data) {
+            // --- بداية منطق التحقق التلقائي ---
+            const userPhone = ScarStore.state.userInfo.phone;
+            const orderPhone = result.data.phone;
+            let isAutoVerified = false;
+
+            // مقارنة رقم المستخدم المحفوظ مع رقم هاتف الطلب
+            if (userPhone && orderPhone) {
+                // دالة صغيرة لإزالة أي رموز غير رقمية للمقارنة بشكل دقيق
+                const normalize = (phone) => String(phone).replace(/\D/g, '');
+                const normalizedUserPhone = normalize(userPhone);
+                const normalizedOrderPhone = normalize(orderPhone);
+                
+                // التحقق إذا كان أحد الرقمين ينتهي بالآخر (لمعالجة الحالات مع أو بدون كود الدولة)
+                if (normalizedUserPhone.endsWith(normalizedOrderPhone) || normalizedOrderPhone.endsWith(normalizedUserPhone)) {
+                    isAutoVerified = true;
+                }
             }
 
-            btnText.classList.add('hidden');
-            spinner.classList.remove('hidden');
-            submitBtn.disabled = true;
+            // تحديث حالة التحقق العامة قبل عرض النافذة
+            ScarStore.state.orderVerification = {
+                orderId: result.data.id,
+                isVerified: isAutoVerified
+            };
+            // --- نهاية منطق التحقق التلقائي ---
 
-            try {
-                const requestUrl = `${config.googleSheetWebAppUrl}?action=search&id=${orderId}`;
-                const response = await fetch(requestUrl);
+            // تخزين بيانات الطلب مؤقتاً لاستخدامها في التحقق اليدوي إذا لزم الأمر
+            ScarStore.state.currentTrackingData = result.data;
+            
+            // عرض النافذة (ستظهر بالحالة المناسبة تلقائياً)
+            const modalFragment = ScarStore.Templates.getOrderStatusModalHtml(result.data);
+            const tempDiv = document.createElement('div');
+            tempDiv.appendChild(modalFragment);
+            ScarStore.Modals.replaceContent(tempDiv.innerHTML);
 
-                if (!response.ok) {
-                    throw new Error(`خطأ من الخادم: ${response.status} ${response.statusText}`);
+        } else {
+            // التعامل مع حالة عدم العثور على الطلب
+            const notFoundModalFragment = ScarStore.Templates.getOrderNotFoundModalHtml(orderId);
+            const tempDiv = document.createElement('div');
+            tempDiv.appendChild(notFoundModalFragment);
+            ScarStore.Modals.replaceContent(tempDiv.innerHTML);
+        }
+        
+        lucide.createIcons();
+
+    } catch (error) {
+        console.error("حدث خطأ أثناء تتبع الطلب:", error);
+        
+        let errorMessage = 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.';
+        if (error.name === 'TypeError') { // طريقة أفضل للتحقق من أخطاء الشبكة
+            errorMessage = 'فشل الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.';
+        }
+        
+        ScarStore.Toast.show(errorMessage, 'danger');
+        ScarStore.Modals.closeLast();
+        
+    } finally {
+        // إعادة الزر لحالته الطبيعية دائماً
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+        submitBtn.disabled = false;
+    }
+},
+
+// 2. دالة التحقق اليدوي (مع تحديث الواجهة بسلاسة)
+async handleOrderVerification(form) {
+    const formData = new FormData(form);
+    const enteredPhone = formData.get('phone_verify');
+    const { currentTrackingData } = ScarStore.state;
+
+    if (!enteredPhone || !currentTrackingData || !currentTrackingData.phone) return;
+
+    // المقارنة باستخدام آخر 6 أرقام
+    const last6Entered = enteredPhone.slice(-6);
+    const last6Stored = String(currentTrackingData.phone).slice(-6);
+
+    if (last6Entered === last6Stored) {
+        ScarStore.state.orderVerification.isVerified = true;
+
+        // --- تحديث الواجهة بسلاسة بدون إعادة تحميل ---
+        const verificationGate = document.getElementById('verification-gate');
+        if (verificationGate) {
+            // إخفاء وإزالة نموذج التحقق بحركة ناعمة
+            gsap.to(verificationGate, {
+                height: 0, opacity: 0, padding: 0, margin: 0, duration: 0.4, ease: 'power2.in',
+                onComplete: () => verificationGate.remove()
+            });
+        }
+
+        // كشف البيانات المخفية بحركة ناعمة
+        document.querySelectorAll('.masked-data').forEach(el => {
+            const unmaskedValue = el.dataset.unmasked;
+            gsap.to(el, {
+                opacity: 0, duration: 0.2, onComplete: () => {
+                    el.innerHTML = unmaskedValue;
+                    gsap.to(el, { opacity: 1, duration: 0.2 });
                 }
-                
-                const result = await response.json();
+            });
+        });
 
-                if (result.result === 'success' && result.data) {
-                    const modalFragment = ScarStore.Templates.getOrderStatusModalHtml(result.data);
-                    const tempDiv = document.createElement('div');
-                    tempDiv.appendChild(modalFragment);
-                    ScarStore.Modals.replaceContent(tempDiv.innerHTML);
-                } else {
-                    const notFoundModalFragment = ScarStore.Templates.getOrderNotFoundModalHtml(orderId);
-                    const tempDiv = document.createElement('div');
-                    tempDiv.appendChild(notFoundModalFragment);
-                    ScarStore.Modals.replaceContent(tempDiv.innerHTML);
-                }
-                lucide.createIcons();
-
-            } catch (error) {
-                console.error("حدث خطأ أثناء تتبع الطلب:", error);
-                
-                let errorMessage = 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.';
-                if (error instanceof TypeError) {
-                    errorMessage = 'فشل الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.';
-                } else if (error instanceof SyntaxError) {
-                    errorMessage = 'استجابة غير صالحة من الخادم. يرجى المحاولة لاحقًا.';
-                }
-                
-                ScarStore.Toast.show(errorMessage, 'danger');
-                ScarStore.Modals.closeLast();
-                
-            } finally {
-                btnText.classList.remove('hidden');
-                spinner.classList.add('hidden');
-                submitBtn.disabled = false;
-            }
-        },
+    } else {
+        ScarStore.Toast.show('رقم الهاتف غير مطابق لسجلاتنا', 'danger');
+        form.classList.add('shake-animation');
+        setTimeout(() => form.classList.remove('shake-animation'), 500);
+    }
+},
 
         setupProductCardHover() {
             let recentlyTouched = false;
@@ -207,129 +292,117 @@ Object.assign(ScarStore, {
             });
         },
         
-        handleScroll() {
-            const isScrolled = window.scrollY > 300;
-        
-            if (ScarStore.DOMElements.backToTopBtn) {
-                ScarStore.DOMElements.backToTopBtn.classList.toggle('visible', isScrolled);
+        handleBodyChange(e) {
+            const target = e.target;
+
+            // ✨ جديد: التعامل مع تغيير المحافظة
+            if (target.id === 'customer-governorate') {
+                this.handleGovernorateChange(target);
+                return;
             }
-        
-            if (ScarStore.DOMElements.whatsappWidget) {
-                ScarStore.DOMElements.whatsappWidget.classList.toggle('visible', isScrolled);
+
+            if (target.classList.contains('qty-input')) {
+                const productContainer = target.closest('[data-id]');
+                if (productContainer) {
+                    const productId = productContainer.dataset.id;
+                    const product = ScarStore.state.productMap.get(productId);
+                    if (product) {
+                        const minQty = product.minPurchase || 1;
+                        const stock = product.stock;
+                        let currentValue = parseInt(target.value, 10);
+
+                        if (isNaN(currentValue) || currentValue < 1) {
+                            currentValue = minQty;
+                        }
+                        
+                        if (currentValue < minQty) {
+                            currentValue = minQty;
+                            ScarStore.Toast.show(`الحد الأدنى للكمية هو ${minQty} قطعة`, 'info');
+                        }
+
+                        if (currentValue > stock) {
+                            currentValue = stock;
+                            ScarStore.Toast.show(`الكمية المتاحة في المخزن هي ${stock} قطعة فقط`, 'info');
+                        }
+
+                        target.value = currentValue;
+                    }
+                }
+                return; 
+            }
+            
+            if (target.classList.contains('product-variant-selector')) {
+                const productContainer = target.closest('[data-id]');
+                if (!productContainer) return;
+
+                const productId = productContainer.dataset.id;
+                const product = ScarStore.state.productMap.get(productId);
+                if (!product) return;
+                
+                if (target.name.includes('اللون')) {
+                    const selectedColorValue = target.value;
+                    const colorOption = product.variants['اللون'].find(opt => (typeof opt === 'object' ? opt.value : opt) === selectedColorValue);
+
+                    if (colorOption && colorOption.imageSet) {
+                        const imageIndex = colorOption.imageSet - 1;
+                        if (product.images && product.images[imageIndex]) {
+                            const mainImage = productContainer.querySelector('.main-product-img');
+                            if(mainImage) mainImage.src = product.images[imageIndex];
+                        } else if(product.media && product.media[imageIndex]) {
+                             const mainImage = productContainer.querySelector('.main-product-img');
+                            if(mainImage) mainImage.src = product.media[imageIndex].src;
+                        }
+                    }
+                }
+
+                const cartItemContainer = target.closest('[data-cart-id]');
+                if (cartItemContainer) {
+                    const cartId = cartItemContainer.dataset.cartId;
+                    const variantKey = target.dataset.variantKey;
+                    const newVariantValue = target.value;
+                    ScarStore.Cart.changeVariant(cartId, productId, variantKey, newVariantValue);
+                    return; 
+                }
+
+                ScarStore.UI.updateProductCardState(productContainer);
+                return;
+            }
+
+            let filtersChanged = false;
+            if (target.id === 'filter-main-category') {
+                const newCategory = target.value;
+                ScarStore.Router.navigateTo(`?category=${newCategory}`);
+                return;
+            }
+            if (target.id === 'filter-sub-category') {
+                const catPath = target.value ? `${ScarStore.state.activeMainCategory}/${target.value}` : ScarStore.state.activeMainCategory;
+                ScarStore.Router.navigateTo(`?category=${catPath}`);
+                return;
+            }
+            if (target.id === 'filter-brand') {
+                const tomselect = target.tomselect;
+                if (tomselect) {
+                    ScarStore.state.activeBrands = tomselect.getValue();
+                    filtersChanged = true;
+                }
+            }
+            if (target.id === 'sort-options') {
+                ScarStore.state.sortBy = target.value;
+                filtersChanged = true;
+            }
+            if (target.name === 'shipping') this.updateCheckoutSummary();
+
+            if (filtersChanged) {
+                ScarStore.state.currentPage = 1;
+                if (ScarStore.state.currentView === 'list-page') {
+                    ScarStore.UI.renderListPage(new URLSearchParams(window.location.search).get('view'));
+                } else {
+                    ScarStore.Router.updateURLWithFilters();
+                    ScarStore.UI.renderProducts();
+                }
             }
         },
-// استبدل الدالة الحالية بالكامل بهذه النسخة المحسّنة
-handleBodyChange(e) {
-    const target = e.target;
 
-    // ✅ START: منطق جديد للتحقق من صحة كمية الإدخال اليدوي
-    if (target.classList.contains('qty-input')) {
-        const productContainer = target.closest('[data-id]');
-        if (productContainer) {
-            const productId = productContainer.dataset.id;
-            const product = ScarStore.state.productMap.get(productId);
-            if (product) {
-                const minQty = product.minPurchase || 1;
-                const stock = product.stock;
-                let currentValue = parseInt(target.value, 10);
-
-                // التعامل مع الإدخال الخاطئ (نص أو قيمة غير صالحة)
-                if (isNaN(currentValue) || currentValue < 1) {
-                    currentValue = minQty;
-                }
-                
-                // التحقق من الحد الأدنى للشراء
-                if (currentValue < minQty) {
-                    currentValue = minQty;
-                    ScarStore.Toast.show(`الحد الأدنى للكمية هو ${minQty} قطعة`, 'info');
-                }
-
-                // التحقق من المخزون المتاح
-                if (currentValue > stock) {
-                    currentValue = stock;
-                    ScarStore.Toast.show(`الكمية المتاحة في المخزن هي ${stock} قطعة فقط`, 'info');
-                }
-
-                // تحديث القيمة في المربع بالقيمة الصحيحة
-                target.value = currentValue;
-            }
-        }
-        return; // نتوقف هنا لأننا تعاملنا مع هذا الحدث
-    }
-    // ✅ END: انتهى المنطق الجديد
-    
-    if (target.classList.contains('product-variant-selector')) {
-        const productContainer = target.closest('[data-id]');
-        if (!productContainer) return;
-
-        const productId = productContainer.dataset.id;
-        const product = ScarStore.state.productMap.get(productId);
-        if (!product) return;
-        
-        if (target.name.includes('اللون')) {
-            const selectedColorValue = target.value;
-            const colorOption = product.variants['اللون'].find(opt => (typeof opt === 'object' ? opt.value : opt) === selectedColorValue);
-
-            if (colorOption && colorOption.imageSet) {
-                const imageIndex = colorOption.imageSet - 1;
-                if (product.images && product.images[imageIndex]) {
-                    const mainImage = productContainer.querySelector('.main-product-img');
-                    if(mainImage) mainImage.src = product.images[imageIndex];
-                } else if(product.media && product.media[imageIndex]) {
-                     const mainImage = productContainer.querySelector('.main-product-img');
-                    if(mainImage) mainImage.src = product.media[imageIndex].src;
-                }
-            }
-        }
-
-      const cartItemContainer = target.closest('[data-cart-id]');
-        if (cartItemContainer) {
-            const cartId = cartItemContainer.dataset.cartId;
-            const variantKey = target.dataset.variantKey;
-            const newVariantValue = target.value;
-            ScarStore.Cart.changeVariant(cartId, productId, variantKey, newVariantValue);
-            return; 
-        }
-
-        // الكود الجديد (الصحيح)
-        ScarStore.UI.updateProductCardState(productContainer);
-        return;
-    }
-
-    let filtersChanged = false;
-    if (target.id === 'filter-main-category') {
-        const newCategory = target.value;
-        ScarStore.Router.navigateTo(`?category=${newCategory}`);
-        return;
-    }
-    if (target.id === 'filter-sub-category') {
-        const catPath = target.value ? `${ScarStore.state.activeMainCategory}/${target.value}` : ScarStore.state.activeMainCategory;
-        ScarStore.Router.navigateTo(`?category=${catPath}`);
-        return;
-    }
-    if (target.id === 'filter-brand') {
-        const tomselect = target.tomselect;
-        if (tomselect) {
-            ScarStore.state.activeBrands = tomselect.getValue();
-            filtersChanged = true;
-        }
-    }
-    if (target.id === 'sort-options') {
-        ScarStore.state.sortBy = target.value;
-        filtersChanged = true;
-    }
-    if (target.name === 'shipping') this.updateCheckoutSummary();
-
-    if (filtersChanged) {
-        ScarStore.state.currentPage = 1;
-        if (ScarStore.state.currentView === 'list-page') {
-            ScarStore.UI.renderListPage(new URLSearchParams(window.location.search).get('view'));
-        } else {
-            ScarStore.Router.updateURLWithFilters();
-            ScarStore.UI.renderProducts();
-        }
-    }
-},
         handleBodyClick(e) {
             const target = e.target;
             
@@ -337,21 +410,6 @@ handleBodyChange(e) {
                 if (ScarStore.state.priceMode === 'retail') {
                     ScarStore.Modals.showAlert('تنبيه', 'لا يمكن التوجه إلى وضع الجملة في الوقت الحالي، جاري تطويره. انتظرونا!');
                     return;
-                }
-
-                if (ScarStore.state.cart.length > 0) {
-                    ScarStore.Modals.showConfirmation('تغيير وضع الأسعار', 'سيتم إفراغ سلة التسوق الخاصة بك عند التبديل. هل أنت متأكد؟',
-                        () => {
-                            ScarStore.Cart.clear();
-                            ScarStore.state.priceMode = 'wholesale';
-                            ScarStore.UI.updatePriceModeToggle();
-                            ScarStore.resetAndReloadApp();
-                        }
-                    );
-                } else {
-                    ScarStore.state.priceMode = 'wholesale';
-                    ScarStore.UI.updatePriceModeToggle();
-                    ScarStore.resetAndReloadApp();
                 }
             };
 
@@ -362,16 +420,14 @@ handleBodyChange(e) {
                 '.close-modal-btn': () => ScarStore.Modals.closeLast(),
                 '[data-action="close-modal"]': () => ScarStore.Modals.closeLast(),
                 '#track-order-btn': () => ScarStore.Modals.showOrderTracking(),
+                    '#get-location-map-btn': (el) => this.handleGetLocation(el),
+
                 '#price-mode-toggle': handlePriceModeToggle,
                 '#toggle-categories-view-btn': () => {
                     ScarStore.state.isAllCategoriesView = !ScarStore.state.isAllCategoriesView;
                     ScarStore.UI.renderHomeCategories();
                 },
-              // استبدل السطر الحالي بهذا
-'#complaints-btn': (el, e) => { 
-    e.preventDefault();
-    ScarStore.Modals.showComplaintModal();
-},
+                '#feedback-btn': () => ScarStore.Modals.showComplaintModal(),
                 '.past-order-item': (el) => {
                     const orderId = el.dataset.orderId;
                     const input = el.closest('form').querySelector('#order-id-input');
@@ -469,12 +525,15 @@ handleBodyChange(e) {
                 },
                 '#view-mode-grid': () => ScarStore.UI.setProductViewMode('grid'),
                 '#view-mode-list': () => ScarStore.UI.setProductViewMode('list'),
-'#price-filter-btn': (el) => {
-    const dropdown = el.nextElementSibling;
-    if (dropdown) {
-        dropdown.classList.toggle('hidden');
-    }
-},            };
+                '#price-filter-btn': (el) => {
+                    const dropdown = el.nextElementSibling;
+                    if (dropdown) {
+                        dropdown.classList.toggle('hidden');
+                    }
+                },
+                // ✨ جديد: إضافة زر تحديد الموقع
+                '#get-location-btn': (el) => this.handleGetLocation(el),
+            };
 
             for (const selector in delegates) {
                 const element = target.closest(selector);
@@ -573,6 +632,8 @@ handleBodyChange(e) {
                 e.preventDefault();
                 this.handleComplaintSubmit(e.target);
             }
+                if (formId === 'order-verify-form') this.handleOrderVerification(e.target); // <-- تأكد من وجود هذا السطر
+
             if (formId === 'phone-form') {
                 e.preventDefault();
                 const phoneInput = e.target.querySelector('#user-phone-input');
@@ -597,139 +658,184 @@ handleBodyChange(e) {
             }
         },
 
-        async handleOrderSubmit(form) {
-            const { cart, productMap, storeData: { config } } = ScarStore.state;
-            const googleSheetUrl = config.googleSheetWebAppUrl;
-            if (!googleSheetUrl || googleSheetUrl.includes("YOUR_GOOGLE_SHEET") || cart.length === 0) {
-                ScarStore.Toast.show('عفواً، خدمة الطلبات غير متاحة حالياً', 'danger');
-                return;
-            }
+     // دالة handleOrderSubmit الكاملة من ملف events.js
 
-            const phoneInput = form.querySelector('#customer-phone');
-            const iti = ScarStore.state.phoneInputInstances[phoneInput.id];
-            if (!iti || !iti.isValidNumber()) {
-                ScarStore.Toast.show('يرجى إدخال رقم هاتف صحيح', 'danger');
-                return;
-            }
-            const fullPhoneNumber = iti.getNumber();
+      async handleOrderSubmit(form) {
+    const { cart, productMap, storeData: { config } } = ScarStore.state;
+    const googleSheetUrl = config.googleSheetWebAppUrl;
 
-            const submitBtn = form.closest('.modal-content').querySelector('button[type="submit"]');
-            const btnText = submitBtn.querySelector('.button-text');
-            const spinner = submitBtn.querySelector('.spinner');
-            btnText.classList.add('hidden');
-            spinner.classList.remove('hidden');
-            submitBtn.disabled = true;
+    // تحقق أولي
+    if (!googleSheetUrl || cart.length === 0) {
+        ScarStore.Toast.show('عفواً، خدمة الطلبات غير متاحة حالياً أو السلة فارغة', 'danger');
+        return;
+    }
 
-            const orderId = ScarStore.generateOrderId();
-            const formData = new FormData(form);
-            formData.set('phone', fullPhoneNumber);
-            
-            const shippingOption = document.querySelector('input[name="shipping"]:checked');
-            const shippingCost = parseFloat(shippingOption.dataset.cost);
-            const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-            const totalPrice = subtotal + shippingCost;
-            formData.append('orderId', orderId);
+    // تحقق من رقم الهاتف الأساسي
+    const phoneInput = form.querySelector('#customer-phone');
+    const iti = ScarStore.state.phoneInputInstances[phoneInput.id];
+    if (!iti || !iti.isValidNumber()) {
+        ScarStore.Toast.show('يرجى إدخال رقم هاتف أساسي صحيح', 'danger');
+        return;
+    }
 
-            const cartDetails = cart.map(item => {
-                const product = productMap.get(item.id);
-                let optionsStr = '';
-                if (item.options) {
-                    let modelStr = '';
-                    if (item.options['موديل الهاتف']) {
-                        if (typeof item.options['موديل الهاتف'] === 'object') {
-                            modelStr = Object.entries(item.options['موديل الهاتف']).map(([model, qty]) => `${model}: ${qty} قطعة`).join(' | ');
-                        } else {
-                            modelStr = `الموديل: ${item.options['موديل الهاتف']}`;
-                        }
-                    }
-                    const otherOptionsStr = Object.entries(item.options).filter(([k]) => k !== 'موديل الهاتف').map(([k, v]) => `${k}: ${v}`).join(' - ');
-                    optionsStr = [modelStr, otherOptionsStr].filter(Boolean).join(' - ');
+    // تحقق من الدفع
+    if (!ScarStore.Payment.validate()) {
+        ScarStore.Toast.show('يرجى اختيار طريقة الدفع أولاً', 'danger');
+        return;
+    }
+
+    const selectedPaymentMethod = ScarStore.Payment.getSelectedMethod();
+
+    // زر التأكيد
+    const submitBtn = document.getElementById('confirm-order-btn');
+    const btnText = submitBtn.querySelector('.button-text');
+    const spinner = submitBtn.querySelector('.spinner');
+    btnText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    submitBtn.disabled = true;
+
+    try {
+        // رقم الطلب
+        const orderId = await ScarStore.generateUniqueOrderId();
+
+        // بناء البيانات
+        const formData = new FormData(form);
+        formData.set('phone', iti.getNumber()); // رقم الهاتف بصيغة دولية
+        const shippingOption = document.querySelector('input[name="shipping"]:checked');
+        const shippingCost = shippingOption ? parseFloat(shippingOption.dataset.cost) || 0 : 0;
+
+        const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        const totalPrice = subtotal + shippingCost;
+
+        // تفاصيل السلة
+        const cartDetails = cart.map(item => {
+            const product = productMap.get(item.id);
+            let optionsStr = Object.entries(item.options || {}).map(([key, value]) => {
+                if (key === 'موديل الهاتف' && typeof value === 'object') {
+                    return `الموديلات: ${Object.entries(value).map(([model, qty]) => `${model} (x${qty})`).join(', ')}`;
                 }
-                return `${product.id} - ${product.name} (الكمية الإجمالية: ${item.quantity}) (السعر: ${item.price}) [${optionsStr}]`;
-            }).join(', ');
+                return `${key}: ${value}`;
+            }).join(' - ');
+            return `${product.id} - ${product.name} (الكمية: ${item.quantity}) (السعر: ${item.price.toFixed(2)}) [${optionsStr}]`;
+        }).join(';\n');
 
-            formData.append('shippingCost', shippingCost);
-            formData.append('totalPrice', totalPrice);
-            formData.append('cartData', cartDetails);
-            formData.append('timestamp', new Date().toLocaleString('ar-EG'));
+        // إضافة البيانات الأساسية
+        formData.append('orderId', orderId);
+        formData.append('totalPrice', totalPrice.toFixed(2));
+        formData.append('cartData', cartDetails);
+        formData.append('paymentMethod', selectedPaymentMethod.name);
+        formData.append('shippingCost', shippingCost.toFixed(2));
+        formData.append('timestamp', new Date().toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' }));
 
-            try {
-                const response = await fetch(googleSheetUrl, { method: 'POST', body: formData });
-                const result = await response.json();
-                if (result.result === "success") {
+        // للتأكد أثناء التطوير
+        console.log("📦 بيانات الطلب المرسلة:", Object.fromEntries(formData.entries()));
 
-                    const newName = formData.get('name');
-                    const newPhone = fullPhoneNumber; 
-                    const newGovernorate = formData.get('governorate');
-                    const newAddress = formData.get('address');
+        // الإرسال إلى Google Sheets
+        const response = await fetch(googleSheetUrl, { method: 'POST', body: formData });
+        const result = await response.json();
 
-                    if (newName !== ScarStore.state.userInfo.name || newPhone !== ScarStore.state.userInfo.phone || newGovernorate !== ScarStore.state.userInfo.governorate || newAddress !== ScarStore.state.userInfo.address) {
-                        ScarStore.state.userInfo.name = newName;
-                        ScarStore.state.userInfo.phone = newPhone;
-                        ScarStore.state.userInfo.governorate = newGovernorate;
-                        ScarStore.state.userInfo.address = newAddress;
-                        ScarStore.Modals.saveUserInfo();
-                        ScarStore.Toast.show('تم تحديث بياناتك المحفوظة', 'info');
-                    }
+        if (result.result === "success") {
+            // حفظ بيانات العميل
+            ScarStore.state.userInfo = {
+                name: formData.get('name') || "",
+                phone: iti.getNumber(),
+                phone_secondary: formData.get('phone_secondary') || "",
+                governorate: formData.get('governorate') || "",
+                district: formData.get('district') || "",
+                address: formData.get('address') || "",
+                notes: formData.get('notes') || ""
+            };
+            ScarStore.Modals.saveUserInfo();
 
-                    ScarStore.Cart.clear();
-                    ScarStore.Modals.replaceContent(ScarStore.Templates.getOrderSuccessModalHtml(orderId));
-                    
-                    const storageVersion = ScarStore.state.storeData.config.storageVersion || 'v-fallback';
-                    const pastOrders = JSON.parse(localStorage.getItem(`scarOrders_${storageVersion}`) || '[]');
-                    pastOrders.push({ id: orderId, date: new Date().toISOString() });
-                    localStorage.setItem(`scarOrders_${storageVersion}`, JSON.stringify(pastOrders));
+            // تفريغ السلة
+            ScarStore.Cart.clear();
 
-                } else {
-                    throw new Error(result.message || 'فشل إرسال الطلب');
+            // عرض نافذة حسب الدفع
+            if (selectedPaymentMethod.requiresPrepayment) {
+                const modalHtmlString = ScarStore.Templates.getPaymentInstructionsModalHtml(orderId, totalPrice, selectedPaymentMethod);
+                const tempModalDiv = document.createElement('div');
+                tempModalDiv.innerHTML = modalHtmlString;
+
+                const amountEl = tempModalDiv.querySelector('#payment-amount-wallet, #payment-amount-ip');
+                const orderIdEl = tempModalDiv.querySelector('#payment-order-id-wallet, #payment-order-id-ip');
+                if (amountEl) amountEl.textContent = `${totalPrice.toFixed(2)} ${config.currency}`;
+                if (orderIdEl) orderIdEl.textContent = orderId;
+
+                ScarStore.Modals.replaceContent(tempModalDiv.innerHTML);
+
+                // تايمر للمحافظ الإلكترونية
+                const timerEl = document.getElementById('wallet-timer');
+                if (timerEl && selectedPaymentMethod.id === 'e-wallet') {
+                    ScarStore.Payment.startTimer('wallet-timer', 15 * 60);
                 }
-            } catch (error) {
-                console.error('Error submitting order:', error);
-                ScarStore.Toast.show('حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.', 'danger');
-            } finally {
-                btnText.classList.remove('hidden');
-                spinner.classList.add('hidden');
-                submitBtn.disabled = false;
+            } else {
+                ScarStore.Modals.replaceContent(ScarStore.Templates.getOrderSuccessModalHtml(orderId));
             }
-        },
-        
+
+            // حفظ الطلب محليًا
+            const storageVersion = config.storageVersion || 'v-fallback';
+            const pastOrders = JSON.parse(localStorage.getItem(`scarOrders_${storageVersion}`) || '[]');
+            pastOrders.push({ id: orderId, date: new Date().toISOString() });
+            localStorage.setItem(`scarOrders_${storageVersion}`, JSON.stringify(pastOrders));
+
+        } else {
+            throw new Error(result.message || 'فشل إرسال الطلب');
+        }
+
+    } catch (error) {
+        console.error('❌ خطأ أثناء إرسال الطلب:', error);
+        ScarStore.Toast.show('حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.', 'danger');
+    } finally {
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+        submitBtn.disabled = false;
+    }
+},
+
         async handleComplaintSubmit(form) {
             const { config } = ScarStore.state.storeData;
             const complaintUrl = config.googleSheetcomplaintUrl;
-
-            if (!complaintUrl || complaintUrl.includes("YOUR_COMPLAINT_URL")) {
-                ScarStore.Toast.show('عفواً، خدمة الشكاوى غير متاحة حالياً', 'danger');
+            if (!complaintUrl || complaintUrl.trim() === "") {
+                ScarStore.Toast.show('عفواً، خدمة الملاحظات غير متاحة حالياً', 'danger');
                 return;
             }
-
             const phoneInput = form.querySelector('#complaint-phone');
             const iti = ScarStore.state.phoneInputInstances[phoneInput.id];
             if (!iti || !iti.isValidNumber()) {
                 ScarStore.Toast.show('يرجى إدخال رقم هاتف صحيح', 'danger');
                 return;
             }
-            const fullPhoneNumber = iti.getNumber();
-
             const submitBtn = form.querySelector('button[type="submit"]');
             const btnText = submitBtn.querySelector('.button-text');
             const spinner = submitBtn.querySelector('.spinner');
-            
             btnText.classList.add('hidden');
             spinner.classList.remove('hidden');
             submitBtn.disabled = true;
-
-            const formData = new FormData(form);
-            formData.set('phone', fullPhoneNumber);
-            formData.append('timestamp', new Date().toLocaleString('ar-EG'));
-
             try {
+                const formData = new FormData(form);
+                formData.set('phone', iti.getNumber());
+                formData.append('timestamp', new Date().toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' }));
+                const mainType = formData.get('type');
+                let subType = '';
+                if (mainType === 'شكوى') subType = formData.get('problemType');
+                else if (mainType === 'استفسار') subType = formData.get('inquiryType');
+                formData.append('subType', subType);
+                formData.delete('problemType');
+                formData.delete('inquiryType');
+                if (formData.get('hasPreviousOrder') === 'لا') {
+                    formData.delete('orderWithSamePhone');
+                    formData.delete('orderId');
+                }
                 const response = await fetch(complaintUrl, { method: 'POST', body: formData });
                 const result = await response.json();
                 if (result.result === "success") {
-                    ScarStore.Modals.closeLast();
-                    ScarStore.Toast.show('تم إرسال رسالتك بنجاح. شكراً لك!', 'success');
+                    const successTemplate = document.getElementById('complaint-success-modal-template');
+                    const tempDiv = document.createElement('div');
+                    tempDiv.appendChild(successTemplate.content.cloneNode(true));
+                    ScarStore.Modals.replaceContent(tempDiv.innerHTML);
+                    lucide.createIcons();
                 } else {
-                    throw new Error(result.message || 'فشل إرسال الشكوى');
+                    throw new Error(result.message || 'فشل إرسال الرسالة');
                 }
             } catch (error) {
                 console.error('Error submitting complaint:', error);
@@ -740,7 +846,7 @@ handleBodyChange(e) {
                 submitBtn.disabled = false;
             }
         },
-        
+
         handleBrandSearch(e) {
             const searchTerm = e.target.value.toLowerCase();
             const brandItems = document.querySelectorAll('#filter-brand-container .brand-item');
@@ -774,22 +880,34 @@ handleBodyChange(e) {
             });
         },
         
+        // ✨ --- تم تحديث هذه الدالة --- ✨
         updateCheckoutSummary() {
             const { cart, storeData: { config } } = ScarStore.state;
             const { currency } = config;
+            
             const subtotalEl = document.getElementById('summary-subtotal');
             const shippingEl = document.getElementById('summary-shipping');
             const totalEl = document.getElementById('summary-total');
-            if (!subtotalEl || !shippingEl || !totalEl) return;
+            // ✨ جديد: استهداف عنصر الهاتف
+            const totalMobileEl = document.getElementById('summary-total-mobile'); 
+
+            if (!subtotalEl) return; 
+
             const shippingOption = document.querySelector('input[name="shipping"]:checked');
             const shippingCost = shippingOption ? parseFloat(shippingOption.dataset.cost) : 0;
             const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
             const grandTotal = subtotal + shippingCost;
+
             subtotalEl.textContent = `${subtotal.toFixed(2)} ${currency}`;
             shippingEl.textContent = `${shippingCost.toFixed(2)} ${currency}`;
             totalEl.textContent = `${grandTotal.toFixed(2)} ${currency}`;
+            
+            // ✨ جديد: تحديث قيمة عنصر الهاتف أيضاً
+            if (totalMobileEl) {
+                totalMobileEl.textContent = `${grandTotal.toFixed(2)} ${currency}`;
+            }
         },
-        
+
         handleBackClick() {
             const previousPage = sessionStorage.getItem('scarPreviousPage');
             if (previousPage && previousPage !== window.location.href) {
@@ -822,5 +940,98 @@ handleBodyChange(e) {
                 ScarStore.Toast.show('فشلت المشاركة', 'danger');
             }
         },
+
+        // ✨ --- دوال جديدة تمت إضافتها --- ✨
+        handleGovernorateChange(selectElement) {
+            const { governoratesData } = ScarStore.state.storeData.config;
+            const selectedGov = selectElement.value;
+            const districts = governoratesData ? governoratesData[selectedGov] : [];
+            const wrapper = document.getElementById('district-container-wrapper');
+
+            if (!wrapper) return;
+            wrapper.innerHTML = ''; // إفراغ الحاوية
+
+            if (districts && districts.length > 0) {
+                const optionsHtml = districts.map(dist => `<option value="${dist}">${dist}</option>`).join('');
+                const districtSelectHtml = `
+                    <div>
+                        <label for="customer-district" class="block text-sm font-medium text-slate-700 mb-1">المركز / القسم</label>
+                        <select id="customer-district" name="district" class="form-select" required>
+                            <option value="">اختر المركز...</option>
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                `;
+                wrapper.innerHTML = districtSelectHtml;
+            }
+        },
+// استبدل الدالة القديمة بالكامل بهذه النسخة المصححة
+async handleGetLocation(btn) {
+    // 1. جلب العناصر اللازمة من الصفحة
+    const resultDiv = document.getElementById('location-result');
+    const linkInput = document.getElementById('location-link-input');
+    const buttonContent = btn.querySelector('.button-content');
+    const spinner = btn.querySelector('.spinner');
+
+    // 2. التحقق من دعم المتصفح
+    if (!navigator.geolocation) {
+        const msg = 'متصفحك لا يدعم تحديد الموقع.';
+        if (resultDiv) {
+            resultDiv.innerHTML = `❌ ${msg}`;
+            resultDiv.classList.remove('opacity-0');
+        }
+        ScarStore.Toast.show(msg, 'danger');
+        return;
+    }
+
+    // 3. تهيئة الواجهة وبدء التحميل
+    btn.disabled = true;
+    resultDiv.innerHTML = 'جاري تحديد موقعك...';
+    resultDiv.classList.remove('opacity-0');
+    
+    buttonContent.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    btn.classList.remove('success-btn-custom');
+    btn.classList.add('primary-btn');
+
+    // 4. طلب الموقع الحالي للمستخدم
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            
+            // ===== بداية السطر الذي تم تصحيحه =====
+            const googleMapsLink = `https://maps.google.com/?q=${latitude},${longitude}`;
+            // ===== نهاية السطر الذي تم تصحيحه =====
+            
+            linkInput.value = googleMapsLink;
+
+            // 5. تحديث الواجهة عند النجاح
+            resultDiv.innerHTML = `✅ تم التحديث بنجاح. <a href="${googleMapsLink}" target="_blank">افتح الرابط للتأكيد</a>`;
+
+            btn.classList.remove('primary-btn');
+            btn.classList.add('success-btn-custom');
+            buttonContent.innerHTML = `<i data-lucide="check-circle" class="w-6 h-6"></i> <span>تم التحديد (تحديث)</span>`;
+            lucide.createIcons();
+            
+            spinner.classList.add('hidden');
+            buttonContent.classList.remove('hidden');
+            btn.disabled = false;
+        },
+        (error) => {
+            // 6. تحديث الواجهة عند حدوث خطأ
+            let message = 'فشل تحديد الموقع.';
+            if (error.code === 1) message = 'تم رفض الوصول للموقع.';
+            resultDiv.innerHTML = `❌ ${message}`;
+            
+            spinner.classList.add('hidden');
+            buttonContent.innerHTML = `<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg><span>إعادة المحاولة</span>`;
+            buttonContent.classList.remove('hidden');
+            btn.disabled = false;
+            
+            ScarStore.Toast.show(message, 'danger');
+        }
+    );
+},
+
     }
 });
