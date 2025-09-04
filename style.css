@@ -619,8 +619,9 @@ input[type=number] {
     font-weight: bold;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
-    color: white;
+    color: rgb(255, 255, 255);
     z-index: 10;
+    
 }
 
 .badge-new {
@@ -633,6 +634,10 @@ input[type=number] {
 
 .badge-bundle {
     background-color: var(--accent-color);
+}
+
+.badge-exclusive {
+    background-color: #8b5cf6;
 }
 
 .badge-exclusive {
@@ -1400,6 +1405,7 @@ input[type=number] {
 .modal-content .modal-body {
     flex-grow: 1;
     overflow-y: auto;
+
 }
 
 /* 4. إضافة خط فاصل أنيق قبل قسم "الطلبات السابقة" */
@@ -1414,6 +1420,7 @@ input[type=number] {
     height: 1.25em;
     accent-color: var(--accent-color);
 }
+
 /* END: Complaint & Feedback Modal Improvements */
 
 
@@ -1734,3 +1741,34 @@ input[type=number] {
 @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
 
 /* ===== نهاية الكود الموحد ===== */
+.hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+#filter-bar, #tracking-banner {
+    transition: opacity 0.3s, visibility 0.3s;
+}
+@media (max-width: 640px) {
+    #products-title-container {
+        flex-direction: column !important;
+        gap: 8px !important;
+        align-items: flex-start !important;
+        font-size: 1.1rem !important;
+        padding: 0.5rem 0 !important;
+        width: 100%;
+    }
+    .primary-btn, .interactive-btn, .mobile-nav-item {
+        min-height: 48px;
+        font-size: 1rem;
+        touch-action: manipulation;
+    }
+    .product-card {
+        min-width: 0;
+        width: 100%;
+    }
+    .product-image-container img {
+        border-radius: 1rem;
+    }
+}

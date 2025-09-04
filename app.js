@@ -1,11 +1,9 @@
-// FILE: app.js
-
 /**
  * ScarStore Main Application File
  * This file contains the core logic for the e-commerce application,
  * including state management, routing, UI rendering, and data handling.
  *
- * @version 1.2.0
+ * @version 2.1.0
  * @author SCAR Development Team
  */
 
@@ -27,8 +25,8 @@ const ScarStore = {
         currentPage: 1,
         productsPerPage: 12,
         isInitialLoad: true,
-                currentTrackingData: null, 
-   orderVerification: {
+        currentTrackingData: null, 
+        orderVerification: {
             orderId: null,
             isVerified: false
         },
@@ -36,7 +34,6 @@ const ScarStore = {
         isAllCategoriesView: false,
         phoneInputInstances: {},
         productViewMode: 'grid', // 'grid' or 'list'
-
     },
     
     // Cached references to frequently used DOM elements
@@ -120,7 +117,6 @@ const ScarStore = {
         this.Wishlist.updateUI();
         this.UI.renderFooter();
         
-        // Animate page load
         gsap.to(this.DOMElements.preloader, { 
             duration: 0.5, 
             opacity: 0, 
@@ -145,7 +141,6 @@ const ScarStore = {
             this.state.productsPerPage = this.state.storeData.config.productsPerPage || 12;
         } catch (error) {
             console.error('Failed to load config.json:', error);
-            // Provide a fallback config to prevent total app failure
             this.state.storeData.config = {
                 currency: "EGP", productsPerPage: 12, storageVersion: "v-error",
                 googleSheetcomplaintUrl: "", googleSheetWebAppUrl: ""
@@ -286,7 +281,6 @@ const ScarStore = {
             const trackingBanner = document.getElementById('tracking-banner');
             if (trackingBanner) trackingBanner.classList.add('hidden');
 
-            // Hide all main content sections initially
             Object.values(ScarStore.DOMElements).forEach(el => {
                 if (el?.id?.endsWith('-content')) el.classList.add('hidden');
             });
@@ -310,7 +304,7 @@ const ScarStore = {
                 this.setupCategoryView(params);
             } else {
                 ScarStore.state.currentView = 'home';
-                document.title = "SCAR | عروض اكسسوارات الجوال";
+                this.updateMetaTags("SCAR | عروض اكسسوارات الجوال", "عروض حصرية وكل ما تحتاجه لهاتفك في مكان واحد: شواحن، جرابات، سماعات والمزيد بأفضل الأسعار.");
                 ScarStore.UI.renderHomePage();
             }
             window.scrollTo(0, 0);
@@ -344,6 +338,9 @@ const ScarStore = {
                 state.activeMainCategory = 'all-products';
                 state.activeSubCategory = null;
             }
+            
+            const pageTitle = ScarStore.Utils.getPageTitle();
+            this.updateMetaTags(`${pageTitle} | SCAR`, `تصفح ${pageTitle} والمزيد من اكسسوارات الجوالات.`);
 
             UI.renderSidebar();
             UI.renderProducts();
@@ -399,7 +396,20 @@ const ScarStore = {
 
             const newUrl = `${window.location.pathname}?${params.toString()}`;
             window.history.pushState({ path: newUrl }, '', newUrl);
-        }
+        },
+
+        updateMetaTags(title, description, imageUrl) {
+            document.title = title;
+            document.querySelector('meta[name="description"]').setAttribute('content', description);
+            
+            document.querySelector('meta[property="og:title"]').setAttribute('content', title);
+            document.querySelector('meta[property="og:description"]').setAttribute('content', description);
+            if (imageUrl) document.querySelector('meta[property="og:image"]').setAttribute('content', imageUrl);
+            
+            document.querySelector('meta[property="twitter:title"]').setAttribute('content', title);
+            document.querySelector('meta[property="twitter:description"]').setAttribute('content', description);
+            if (imageUrl) document.querySelector('meta[property="twitter:image"]').setAttribute('content', imageUrl);
+        },
     },
 
     /**
@@ -462,7 +472,6 @@ const ScarStore = {
                     if (selectedInput && selectedInput.value) {
                         selectedOptions[key] = selectedInput.value;
                     } else {
-                        // Default to the first option if none is selected
                         const firstOption = product.variants[key][0];
                         if (firstOption) {
                             selectedOptions[key] = typeof firstOption === 'object' ? firstOption.value : firstOption;
@@ -495,7 +504,6 @@ const ScarStore = {
                 filtered = filtered.filter(p => p.subCategoryId === activeSubCategory);
             }
             
-            // If we only need the list to populate the brand filter, we return it here
             if (forBrandFilter) {
                 return filtered;
             }
@@ -864,7 +872,6 @@ const ScarStore = {
         
             if (!wrapper || !moreContainer || !moreDropdown) return;
 
-            // Move items back to the bar before recalculating
             const movedItems = Array.from(moreDropdown.querySelectorAll('.filter-item'));
             movedItems.forEach(item => wrapper.insertBefore(item, moreContainer));
 
@@ -872,7 +879,6 @@ const ScarStore = {
             moreDropdown.innerHTML = '';
             let movedCount = 0;
 
-            // Move items to dropdown if they overflow
             while (wrapper.scrollWidth > wrapper.offsetWidth) {
                 const itemToMove = moreContainer.previousElementSibling;
                 if (!itemToMove) break;
@@ -935,55 +941,12 @@ const ScarStore = {
             const { productsContainer, noResults, filterBar, paginationContainer, noResultsAction, listPageTitle, productsTitleContainer } = ScarStore.DOMElements;
             const productsSection = document.getElementById('products-section');
 
-            if (listPageTitle) listPageTitle.classList.add('hidden');
-            if (productsTitleContainer) productsTitleContainer.classList.remove('hidden');
-
-            const allFilteredProducts = ScarStore.StoreLogic.getFilteredProducts();
-
-            if (productsTitleContainer) {
-                productsTitleContainer.innerHTML = ''; 
-                const { categories } = ScarStore.state.storeData;
-                const { activeMainCategory, activeSubCategory } = ScarStore.state;
-
-                const mainSelect = document.createElement('select');
-                mainSelect.className = 'category-select main-category-select';
-                mainSelect.onchange = (e) => ScarStore.Router.navigateTo(`?category=${e.target.value}`);
-                let allProductsOption = new Option("كل المنتجات", "all-products");
-                mainSelect.add(allProductsOption);
-                categories.forEach(cat => {
-                    let option = new Option(cat.name, cat.id);
-                    mainSelect.add(option);
-                });
-                mainSelect.value = activeMainCategory || 'all-products';
-                productsTitleContainer.appendChild(mainSelect);
-
-                const mainCatData = categories.find(c => c.id === activeMainCategory);
-                if (mainCatData && mainCatData.subCategories && mainCatData.subCategories.length > 0) {
-                    const subSelect = document.createElement('select');
-                    subSelect.className = 'category-select sub-category-select';
-                    subSelect.onchange = (e) => {
-                        const url = e.target.value ? `?category=${activeMainCategory}/${e.target.value}` : `?category=${activeMainCategory}`;
-                        ScarStore.Router.navigateTo(url);
-                    };
-                    let allSubOption = new Option(`كل ${mainCatData.name}`, "");
-                    subSelect.add(allSubOption);
-                    mainCatData.subCategories.forEach(subCat => {
-                        let option = new Option(subCat.name, subCat.id);
-                        subSelect.add(option);
-                    });
-                    subSelect.value = activeSubCategory || "";
-                    productsTitleContainer.appendChild(subSelect);
-                }
-
-                const productCountDiv = document.createElement('div');
-                productCountDiv.className = 'ml-auto text-slate-500 font-semibold text-lg whitespace-nowrap hidden sm:block';
-                productCountDiv.innerHTML = `<span>(${allFilteredProducts.length}) منتج</span>`;
-                productsTitleContainer.appendChild(productCountDiv);
-            }
-            
+            this.renderActiveFilters();
             this.renderSkeletonLoader();
-            
+
             setTimeout(() => { 
+                const allFilteredProducts = ScarStore.StoreLogic.getFilteredProducts();
+                
                 const hasResults = allFilteredProducts.length > 0;
                 
                 productsSection.classList.toggle('hidden', !hasResults);
@@ -1020,7 +983,7 @@ const ScarStore = {
             categoryContent.classList.remove('hidden');
             
             productsTitleContainer.classList.add('hidden'); 
-            listPageTitle.classList.remove('hidden');   
+            listPageTitle.classList.remove('hidden');    
             
             filterBar.classList.remove('hidden');
             paginationContainer.classList.add('hidden');
@@ -1060,17 +1023,10 @@ const ScarStore = {
             lucide.createIcons();
         },
         
-        renderSkeletonLoader(fullPage = false) {
-            const { productsContainer, bundleOffersSection, discountsSection } = ScarStore.DOMElements;
+        renderSkeletonLoader() {
+            const { productsContainer } = ScarStore.DOMElements;
             const skeletonHtml = ScarStore.Templates.getSkeletonCardHtml();
-            
-            if (fullPage) {
-                const skeletonRow = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">${skeletonHtml.repeat(4)}</div>`;
-                bundleOffersSection.innerHTML = skeletonRow;
-                discountsSection.innerHTML = skeletonRow;
-            } else {
-                productsContainer.innerHTML = skeletonHtml.repeat(ScarStore.state.productsPerPage);
-            }
+            productsContainer.innerHTML = skeletonHtml.repeat(ScarStore.state.productsPerPage);
         },
 
         renderPagination(totalProducts) {
@@ -1127,40 +1083,82 @@ const ScarStore = {
 
         async renderProductPage(productId) {
             const { productPageContent } = ScarStore.DOMElements;
-            
             productPageContent.innerHTML = `<div class="text-center py-16"><div class="spinner mx-auto !w-12 !h-12 !border-4 !border-t-indigo-500"></div></div>`;
             productPageContent.classList.remove('hidden');
-
+        
             const product = ScarStore.state.productMap.get(productId);
-
+        
+            if (product) {
+                const RECENTLY_VIEWED_KEY = `scarRecentlyViewed_${ScarStore.state.storeData.config.storageVersion}`;
+                let viewed = JSON.parse(localStorage.getItem(RECENTLY_VIEWED_KEY)) || [];
+                viewed = viewed.filter(id => id !== productId);
+                viewed.unshift(productId);
+                const limitedViewed = viewed.slice(0, 10);
+                localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(limitedViewed));
+            }
+        
             if (!product) {
                 productPageContent.innerHTML = '';
                 productPageContent.appendChild(ScarStore.Templates.getErrorHtml('المنتج غير موجود', 'عفواً، لم نتمكن من العثور على المنتج الذي تبحث عنه.'));
                 return;
             }
             
-            document.title = `${product.name} | SCAR`;
-            document.querySelector('meta[name="description"]').setAttribute("content", product.description);
-
-            productPageContent.innerHTML = '';
-            const productPageElement = ScarStore.Templates.getProductPageHtml(product);
-            productPageContent.appendChild(productPageElement);
-            productPageContent.dataset.id = productId;
-
-            this.renderSimilarProducts(product);
-
-            if (ScarStore.state.priceMode === 'wholesale' && product.variants && product.variants['موديل الهاتف']) {
-                ScarStore.Wholesale.initializeCardSelection(productPageContent, product);
+            const imageSources = (product.media || (product.images || []).map(src => ({type: 'image', src})))
+                .filter(item => item.type === 'image');
+            const mainImageSrc = imageSources.length > 0 ? imageSources[0].src : 'https://placehold.co/600x600/e2e8f0/475569?text=SCAR';
+            ScarStore.Router.updateMetaTags(product.name, product.description, mainImageSrc);
+        
+            const template = document.getElementById('product-page-template');
+            const clone = template.content.cloneNode(true);
+            
+            const find = (selector) => clone.querySelector(selector);
+        
+            find('.main-product-img').src = mainImageSrc;
+            find('.main-product-img').alt = product.name;
+        
+            find('.thumbnails-grid').innerHTML = imageSources.map((img, index) => `
+                <div class="p-1 rounded-lg cursor-pointer ${index === 0 ? 'ring-2 ring-indigo-500' : ''} border bg-white product-thumbnail-item" data-image-index="${index}">
+                    <img src="${img.src}" alt="Thumbnail ${index + 1}" class="w-full h-full object-contain rounded-md pointer-events-none">
+                </div>
+            `).join('');
+        
+            find('.product-name').textContent = product.name;
+            find('.love-btn').dataset.id = product.id;
+            find('#share-product-btn').dataset.id = product.id;
+            find('#share-product-btn').dataset.name = product.name;
+            
+            const metaInfoContainer = find('.meta-info');
+            metaInfoContainer.innerHTML = `
+                <span>ID: <span class="font-semibold text-slate-700">${product.id}</span></span>
+                <span class="w-px h-4 bg-slate-300"></span>
+                <span>الماركة: <span class="font-semibold text-slate-700">${product.brand || 'غير محدد'}</span></span>
+            `;
+        
+            const stockContainer = find('.stock-info-container');
+            if (product.stock <= 0) {
+                stockContainer.innerHTML = `<div class="stock-indicator out-of-stock inline-block">نفدت الكمية</div>`;
+            } else if (product.stock <= ScarStore.state.storeData.config.lowStockThreshold) {
+                stockContainer.innerHTML = `<div class="stock-indicator low-stock inline-block">⏳ متبقي ${product.stock} قطع فقط</div>`;
+            } else {
+                stockContainer.innerHTML = `<div class="stock-indicator bg-green-100 text-green-800 inline-block">متوفر (${product.stock} قطعة)</div>`;
             }
-                                                                                                        
+            
+            find('.product-description').textContent = product.description;
+            
+            productPageContent.innerHTML = ''; // Clear spinner
+            productPageContent.appendChild(clone);
+            productPageContent.dataset.id = productId;
+        
             this.syncProductCardViews(productId);
             this.initializeSearchableSelects(productPageContent);
+            this.renderSimilarProducts(product);
+            this.renderRecentlyViewed();
             lucide.createIcons();
         },
 
         renderSimilarProducts(currentProduct) {
-            const { productPageContent } = ScarStore.DOMElements;
-            if (!currentProduct) return;
+            const similarProductsSection = document.getElementById('similar-products-section');
+            if (!currentProduct || !similarProductsSection) return;
 
             let similarProducts = ScarStore.state.storeData.products.filter(p => {
                 if (p.id === currentProduct.id) return false;
@@ -1177,19 +1175,50 @@ const ScarStore = {
             const finalSimilarList = similarProducts.slice(0, 4);
 
             if (finalSimilarList.length > 0) {
-                const similarProductsSection = document.createElement('div');
-                similarProductsSection.id = 'similar-products-section';
-                similarProductsSection.className = 'mt-12';
-                
                 const similarRow = ScarStore.Templates.getProductRowHtml('منتجات مشابهة', finalSimilarList, `?category=${currentProduct.categoryId}`);
+                similarProductsSection.innerHTML = '';
                 similarProductsSection.appendChild(similarRow);
                 
-                productPageContent.appendChild(similarProductsSection);
-
                 similarProductsSection.querySelectorAll('.product-card').forEach(card => {
                     this.syncProductCardViews(card.dataset.id);
                 });
                 this.initializeSearchableSelects(similarProductsSection);
+                similarProductsSection.style.display = 'block';
+            } else {
+                similarProductsSection.style.display = 'none';
+            }
+        },
+
+        renderRecentlyViewed() {
+            const RECENTLY_VIEWED_KEY = `scarRecentlyViewed_${ScarStore.state.storeData.config.storageVersion}`;
+            const viewedIds = JSON.parse(localStorage.getItem(RECENTLY_VIEWED_KEY)) || [];
+            
+            const container = document.getElementById('recently-viewed-section');
+            
+            if (!container || viewedIds.length < 2) {
+                if (container) container.style.display = 'none';
+                return;
+            }
+        
+            const currentProductId = document.getElementById('product-page-content').dataset.id;
+            const productsToShow = viewedIds
+                .filter(id => id !== currentProductId)
+                .map(id => ScarStore.state.productMap.get(id))
+                .filter(Boolean)
+                .slice(0, 4);
+        
+            if (productsToShow.length > 0) {
+                const productRow = ScarStore.Templates.getProductRowHtml('شاهدت مؤخراً', productsToShow, '#');
+                container.innerHTML = '';
+                container.appendChild(productRow);
+                
+                productRow.querySelectorAll('.product-card').forEach(card => {
+                    this.syncProductCardViews(card.dataset.id);
+                });
+                this.initializeSearchableSelects(container);
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
             }
         },
         
@@ -1201,8 +1230,10 @@ const ScarStore = {
                 <li><a href="?category=all-products" class="hover:text-indigo-600">كل المنتجات</a></li>
                 <li><a href="#" id="feedback-btn-footer" class="hover:text-indigo-600">الشكاوى والملاحظات</a></li>
             `;
-            // Re-bind event for the new footer button
-            document.getElementById('feedback-btn-footer')?.addEventListener('click', () => ScarStore.Modals.showComplaintModal());
+            document.getElementById('feedback-btn-footer')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                ScarStore.Modals.showComplaintModal()
+            });
 
             ScarStore.DOMElements.footerContactInfo.innerHTML = `
                 ${config.phone ? `<p><strong>الهاتف:</strong> <a href="tel:${config.phone}" class="hover:text-indigo-600">${config.phone}</a></p>` : ''}
@@ -1211,7 +1242,6 @@ const ScarStore = {
             const socialLinks = {
                 facebook: config.facebook, 
                 youtube: config.youtube, 
-                tiktok: config.tiktok,
                 'message-circle': config.whatsappNumber ? `https://wa.me/${config.whatsappNumber}` : null
             };
             ScarStore.DOMElements.footerSocialLinks.innerHTML = Object.entries(socialLinks)
@@ -1256,5 +1286,68 @@ const ScarStore = {
                 listBtn.classList.remove('bg-indigo-100', 'text-indigo-600');
             }
         },
+
+        renderActiveFilters() {
+            const container = document.getElementById('active-filters-container');
+            if (!container) return;
+        
+            const { activeBrands, priceRange } = ScarStore.state;
+            container.innerHTML = '';
+            let hasFilters = false;
+        
+            const createFilterPill = (text, removeAction) => {
+                hasFilters = true;
+                const pill = document.createElement('div');
+                pill.className = 'flex items-center gap-1 bg-indigo-100 text-indigo-700 text-sm font-semibold px-3 py-1 rounded-full';
+                pill.innerHTML = `<span>${text}</span>`;
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'p-0.5 rounded-full hover:bg-indigo-200';
+                removeBtn.innerHTML = `<i data-lucide="x" class="w-4 h-4"></i>`;
+                removeBtn.onclick = removeAction;
+                pill.appendChild(removeBtn);
+                container.appendChild(pill);
+            };
+        
+            activeBrands.forEach(brand => {
+                createFilterPill(brand, () => {
+                    ScarStore.state.activeBrands = ScarStore.state.activeBrands.filter(b => b !== brand);
+                    ScarStore.Router.updateURLWithFilters();
+                    ScarStore.UI.renderProducts();
+                    ScarStore.UI.renderSidebar();
+                });
+            });
+        
+            const allProducts = ScarStore.state.storeData.products;
+            const defaultMin = allProducts.length > 0 ? Math.floor(Math.min(...allProducts.map(p => p.basePrice))) : 0;
+            const defaultMax = allProducts.length > 0 ? Math.ceil(Math.max(...allProducts.map(p => p.basePrice))) : 1000;
+            
+            if (priceRange.min !== defaultMin || priceRange.max !== defaultMax) {
+                createFilterPill(`السعر: ${priceRange.min} - ${priceRange.max}`, () => {
+                    ScarStore.state.priceRange.min = defaultMin;
+                    ScarStore.state.priceRange.max = defaultMax;
+                    ScarStore.Router.updateURLWithFilters();
+                    ScarStore.UI.renderProducts();
+                    ScarStore.UI.renderSidebar();
+                });
+            }
+        
+            if (hasFilters) {
+                const clearAllBtn = document.createElement('button');
+                clearAllBtn.className = 'text-sm text-red-500 font-semibold hover:underline mr-2';
+                clearAllBtn.textContent = 'مسح الكل';
+                clearAllBtn.onclick = () => {
+                    ScarStore.state.activeBrands = [];
+                    ScarStore.state.priceRange.min = defaultMin;
+                    ScarStore.state.priceRange.max = defaultMax;
+                    ScarStore.Router.updateURLWithFilters();
+                    ScarStore.UI.renderProducts();
+                    ScarStore.UI.renderSidebar();
+                };
+                container.appendChild(clearAllBtn);
+            }
+            
+            lucide.createIcons();
+        },
     }
 };
+

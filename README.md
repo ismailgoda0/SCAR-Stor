@@ -1,2 +1,0 @@
-# SCAR-Stor
-Stor

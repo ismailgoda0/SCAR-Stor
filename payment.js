@@ -1,12 +1,11 @@
-// ملف payment.js (الإصدار المتطور والنهائي)
-
+// file payment.js
 if (!window.ScarStore) window.ScarStore = {};
-    const { config } = ScarStore.state.storeData;
 
 ScarStore.Payment = {
-    // متغير لتتبع المؤقت ومنعه من العمل بشكل متكرر
+    // A variable to track the timer to prevent it from running multiple times
     activeTimerInterval: null,
     
+    // An array of available payment methods
     methods: [
         {
             id: 'cod',
@@ -19,11 +18,11 @@ ScarStore.Payment = {
         {
             id: 'e-wallet',
             name: 'المحفظة الإلكترونية',
-            logo: 'https://i.postimg.cc/P50462v6/vodafone-cash-logo.png',
+            logo: 'https://alnas-hospital.com/assets/images/vf-cash.png',
             description: 'فودافون كاش، اورنچ كاش، اتصالات كاش',
             requiresPrepayment: true,
             badge: 'موصى به',
-            instructions: `
+            getInstructions: (config) => `
                 <h4 class="font-bold mb-2 text-slate-800">خطوات الدفع عبر المحفظة:</h4>
                 <p class="mb-3 text-sm">لديك <span id="wallet-timer" class="font-bold">15:00</span> دقيقة لإتمام التحويل وتأكيد الطلب.</p>
                 <ol class="list-decimal list-inside space-y-2 text-sm leading-6">
@@ -43,16 +42,16 @@ ScarStore.Payment = {
         {
             id: 'instapay',
             name: 'إنستا باي (InstaPay)',
-            logo: 'https://i.postimg.cc/ht60MGC7/instapay-logo.png',
+            logo: 'https://www.instapay.eg/wp-content/uploads/2022/01/Asset-5@4x-1024x175.png',
             description: 'حوّل المبلغ مباشرة إلى حسابنا عبر إنستا باي.',
             requiresPrepayment: true,
-            instructions: `
+            getInstructions: (config) => `
                 <h4 class="font-bold mb-2 text-slate-800">خطوات الدفع عبر إنستا باي:</h4>
                 <ol class="list-decimal list-inside space-y-2 text-sm leading-6">
                     <li>حوّل المبلغ الإجمالي <strong id="payment-amount-ip" class="text-indigo-600"></strong> إلى العنوان التالي:
                         <div class="inline-flex items-center gap-2 bg-slate-100 p-1 rounded-md">
                             <strong class="font-mono">${config.instapay}</strong> 
-                            <button type="button" onclick="ScarStore.Payment.copyToClipboard('\${config.instapay}')" class="copy-btn">📋 نسخ</button>
+                            <button type="button" onclick="ScarStore.Payment.copyToClipboard('${config.instapay}')" class="copy-btn">📋 نسخ</button>
                         </div>
                     </li>
                     <li><a href="https://wa.me/${config.whatsappNumber}?text=مرحباً،%20لقد%20أتممت%20طلبي%20وهذا%20هو%20إيصال%20الدفع." target="_blank" class="text-green-600 font-semibold underline">أرسل الإيصال على واتساب</a> مع رقم الطلب.</li>
@@ -62,7 +61,7 @@ ScarStore.Payment = {
         {
             id: 'meeza',
             name: 'كارت ميزة',
-            logo: 'https://i.postimg.cc/44N0n0Xw/meeza-logo.png',
+            logo: 'https://meeza-eg.com/wp-content/uploads/2019/10/logo-01-1-1.png',
             description: 'قريباً... الدفع عبر كروت ميزة.',
             requiresPrepayment: true,
             disabled: true
@@ -95,7 +94,6 @@ ScarStore.Payment = {
         container.innerHTML = optionsHtml;
         this.attachEvents();
 
-        // استرجاع آخر خيار دفع استخدمه العميل
         const savedMethodId = localStorage.getItem('scar_selected_payment');
         const savedMethod = this.methods.find(m => m.id === savedMethodId && !m.disabled);
         if (savedMethod) {
@@ -133,10 +131,10 @@ ScarStore.Payment = {
         document.querySelectorAll('.payment-instructions').forEach(el => el.classList.add('hidden'));
 
         const method = this.methods.find(m => m.id === selectedOption.value);
-        if (method && method.instructions && !method.disabled) {
+        if (method && method.getInstructions && !method.disabled) {
             const instructionPanel = document.getElementById(`${method.id}-instructions`);
             if (instructionPanel) {
-                instructionPanel.innerHTML = method.instructions;
+                instructionPanel.innerHTML = method.getInstructions(ScarStore.state.storeData.config);
                 instructionPanel.classList.remove('hidden');
 
                 if (method.id === 'e-wallet') {
@@ -185,3 +183,7 @@ ScarStore.Payment = {
         return selectedMethod && !selectedMethod.disabled;
     }
 };
+
+
+
+
